@@ -2,160 +2,219 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>For Dede 🤍</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-
+<title>QuizZ Sejarah GFFI</title>
 <style>
-body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, #fff5f7, #fdecef);
-  font-family:'Poppins', sans-serif;
-  overflow:hidden;
-}
-.container{ text-align:center; }
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
 
-/* ENVELOPE */
-.envelope{
-  position:relative;
-  width:220px;
-  height:140px;
-  cursor:pointer;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif;}
+body, html{width:100%;height:100%;overflow:hidden;background:black;}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;}
 
-/* base */
-.env-body{
+.screen{
   position:absolute;
-  width:100%;
-  height:100%;
-  background:#ffffff;
-  border-radius:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.12);
-  z-index:1;
+  top:0;left:0;width:100%;height:100%;
+  display:flex;justify-content:center;align-items:center;flex-direction:column;
+  color:#0ff;text-align:center;z-index:1;
 }
 
-/* flap */
-.env-flap{
-  position:absolute;
-  top:0; left:0;
-  width:0; height:0;
-  border-left:110px solid transparent;
-  border-right:110px solid transparent;
-  border-top:70px solid #fbcfe8;
-  transform-origin:top;
-  transition:transform .8s ease;
-  z-index:3;
-}
+input{padding:10px 15px;border:none;border-radius:10px;width:250px;text-align:center;margin:20px 0;background:rgba(0,0,0,0.6);color:#0ff;text-shadow:0 0 8px #0ff;font-size:16px;}
+button{padding:10px 20px;margin:10px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;background:rgba(0,0,0,0.6);color:#0ff;text-shadow:0 0 8px #0ff;font-size:16px;}
+button:hover{transform:scale(1.05);}
 
-/* heart seal */
-.seal{
-  position:absolute;
-  width:26px;
-  height:26px;
-  background:#f43f5e;
-  top:58px; left:97px;
-  transform:rotate(-45deg);
-  z-index:4;
-}
-.seal::before,.seal::after{
-  content:"";
-  position:absolute;
-  width:26px; height:26px;
-  background:inherit;
-  border-radius:50%;
-}
-.seal::before{ top:-13px; left:0; }
-.seal::after{ left:13px; top:0; }
+#timer{font-size:30px;margin-bottom:20px;text-shadow:0 0 10px #0ff;}
+.answers button{display:block;margin:5px auto;width:250px;}
 
-/* letter */
-.letter{
-  position:absolute;
-  width:190px;
-  height:110px;
-  background:#fff;
-  border-radius:12px;
-  top:20px; left:15px;
-  box-shadow:0 18px 36px rgba(0,0,0,.15);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:'Playfair Display', serif;
-  font-size:28px;
-  color:#e11d48;
-  transform:translateY(40px);
-  opacity:0;
-  transition:all .8s ease;
-  z-index:2;
-}
-
-.open .env-flap{
-  transform:rotateX(180deg);
-}
-.open .letter{
-  transform:translateY(-60px);
-  opacity:1;
-}
-
-/* floating hearts */
-.love{
-  position:absolute;
-  color:#fb7185;
-  pointer-events:none;
-}
-
-@keyframes loveUp{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(-140px) scale(1.3); }
-}
-@keyframes loveDown{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(140px) scale(1.1); }
-}
-
-.hint{ margin-top:22px; font-size:14px; color:#6b7280; }
+#leaderboardScreen table{border-collapse:collapse;color:#0ff;text-shadow:0 0 8px #0ff;margin-top:20px;}
+#leaderboardScreen th, td{padding:10px;border:1px solid #0ff;}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="envelope" id="env">
-    <div class="env-flap"></div>
-    <div class="env-body"></div>
-    <div class="seal"></div>
-    <div class="letter">Dede 🤍</div>
-  </div>
-  <div class="hint">tap amplopnya 💌</div>
+<canvas id="particleCanvas"></canvas>
+
+<!-- START SCREEN -->
+<div id="startScreen" class="screen">
+  <h1 style="font-size:32px;text-shadow:0 0 10px #0ff;">QuizZ Sejarah GFFI</h1>
+  <input type="text" id="playerName" placeholder="Masukkan Nama">
+  <button onclick="startQuiz()">Mulai Quiz</button>
+  <button onclick="showLeaderboard()">Lihat Leaderboard</button>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="quizScreen" class="screen" style="display:none;">
+  <div id="timer">30</div>
+  <h2 id="question" style="text-shadow:0 0 10px #0ff;"></h2>
+  <div class="answers"></div>
+</div>
+
+<!-- LEADERBOARD SCREEN -->
+<div id="leaderboardScreen" class="screen" style="display:none;">
+  <h1 style="text-shadow:0 0 10px #0ff;">Leaderboard</h1>
+  <table>
+    <thead><tr><th>Nama</th><th>Skor</th></tr></thead>
+    <tbody id="leaderboardBody"></tbody>
+  </table>
+  <button onclick="backToStart()">Kembali</button>
 </div>
 
 <script>
-const env = document.getElementById('env');
+// ---- Quiz Data ----
+const questions=[
+{q:"tahun berapa grup FB GFFI di buat?", a:["2019","2020","2021","2022","2023"], correct:2, point:7},
+{q:"siapa nama Pembuat Grup GFFI?", a:["Rafly Sepbryan","Rafa","Asep","Farhan","Ermi","Elin","Fahri"], correct:0, point:7},
+{q:"Berapa bulan Grup FB GFFI Tidak dirawat?", a:["3 Bulan","6 Bulan","5 Bulan","2 Bulan","8 Bulan"], correct:4, point:7},
+{q:"Berapa jumlah Grup WhatsApp GFFI Yang dibuat dari Tahun 2023 Sampai 2025?", a:["1","2","3","4","5"], correct:3, point:7},
+{q:"sebutkan nama moderator cewek yang pertama di grup FB GFFI!", a:["Ra","Lia","Marsel","Dea","Ermi","Ulfa"], correct:2, point:7},
+{q:"Sebutkan berapa jumlah admin digrup WhatsApp GFFI saat ini!", a:["5","6","7","8","9"], correct:3, point:6},
+{q:"Sebutkan Berapa jumlah Admin Cowo di Grup WhatsApp GFFI!", a:["3","4","5","6","7"], correct:1, point:7},
+{q:"Tempat tinggal Admin Utama GFFI di?", a:["Jawa Timur","Jawa Barat","Jawa Tengah","Sumatra Selatan","Kalimantan Timur"], correct:0, point:6},
+{q:"Berapa jumlah Admin Cewek di Grup WhatsApp GFFI?", a:["3","2","4","6","5"], correct:2, point:7},
+{q:"sudah berapa tahun grup GFFI sekarang?", a:["2 Tahun","3 Tahun","4 Tahun","5 Tahun","6 Tahun"], correct:4, point:6},
+{q:"sebutkan nama Moderator Cowo Pertama di grup fb GFFI!", a:["Asep","Adi","Farhan","Halim","Fahri"], correct:1, point:7},
+{q:"tahun berapa pertama kali grup WhatsApp GFFI dibuat?", a:["2021","2022","2023","2024","2025"], correct:2, point:6},
+{q:"siapa admin old di grup WhatsApp GFFI 'Setelah' admin Rafly?", a:["Fahri","Asep","Farhan","Elin","Lia"], correct:2, point:7},
+{q:"Berapa Jumlah Anggota terbanyak di grup WhatsApp GFFI pada tahun 2023/2024?", a:["200 Anggota","400 Anggota","700 Anggota","600 Anggota","100 Anggota"], correct:3, point:6},
+{q:"Sebutkan nama cewe yang terakhir menjadi moderator di grup FB GFFI?", a:["Lia","Dea","Ulfa","Ermi","Ra"], correct:4, point:7},
+];
 
-env.addEventListener('click', ()=>{
-  env.classList.toggle('open');
-  spawnLove(14);
-});
+let currentQuestion=0, score=0, timer, timeLeft=30;
 
-function spawnLove(n){
-  const r = env.getBoundingClientRect();
-  for(let i=0;i<n;i++){
-    const h = document.createElement('div');
-    h.className = 'love';
-    h.textContent = '❤';
-    h.style.left = (r.left + r.width/2 + (Math.random()*60-30))+'px';
-    h.style.top  = (r.top + r.height/2)+'px';
-    h.style.fontSize = (12 + Math.random()*16)+'px';
-    const dur = 2 + Math.random()*2;
-    const up = Math.random() > .5;
-    h.style.animation = `${up?'loveUp':'loveDown'} ${dur}s ease-out forwards`;
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(), dur*1000);
-  }
+// ---- Helper ----
+function shuffle(array){for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[array[i],array[j]]=[array[j],array[i]];} return array;}
+
+function startQuiz(){
+  const name=document.getElementById('playerName').value.trim();
+  if(!name){alert("Nama wajib diisi!"); return;}
+  localStorage.setItem("playerName",name);
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('quizScreen').style.display='flex';
+  currentQuestion=0; score=0;
+  shuffle(questions);
+  nextQuestion();
 }
-</script>
 
+function nextQuestion(){
+  if(currentQuestion>=questions.length){finishQuiz(); return;}
+  const q=questions[currentQuestion];
+  const questionEl=document.getElementById('question');
+  const answersEl=document.querySelector('.answers');
+  questionEl.textContent=q.q;
+  answersEl.innerHTML='';
+  const shuffled=shuffle(q.a.map((val,i)=>({val,i})));
+  shuffled.forEach(ans=>{
+    const btn=document.createElement('button');
+    btn.textContent=ans.val;
+    btn.onclick=()=>{checkAnswer(ans.i);};
+    answersEl.appendChild(btn);
+  });
+  timeLeft=30;
+  document.getElementById('timer').textContent=timeLeft;
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    timeLeft--;
+    document.getElementById('timer').textContent=timeLeft;
+    if(timeLeft<=0){clearInterval(timer);currentQuestion++;nextQuestion();}
+  },1000);
+}
+
+function checkAnswer(i){
+  const q=questions[currentQuestion];
+  if(i===q.correct){score+=q.point;}
+  clearInterval(timer);
+  currentQuestion++;
+  nextQuestion();
+}
+
+// ---- Leaderboard ----
+function finishQuiz(){
+  document.getElementById('quizScreen').style.display='none';
+  document.getElementById('leaderboardScreen').style.display='flex';
+
+  const tbody=document.getElementById('leaderboardBody');
+  let leaderboard=JSON.parse(localStorage.getItem("leaderboard")||"[]");
+
+  // Reset leaderboard hanya pada jam tertentu (06-22 WIB)
+  const now=new Date();
+  const hour=(now.getUTCHours()+7)%24;
+  if(hour>=6 && hour<22){
+    // jangan reset skor lama, cukup bisa reset otomatis di server/cron nanti
+  }
+
+  // Tambahkan skor baru
+  const name=localStorage.getItem("playerName");
+  leaderboard.push({name,score});
+
+  // Urutkan skor tertinggi
+  leaderboard.sort((a,b)=>b.score-a.score);
+
+  // Simpan kembali permanen
+  localStorage.setItem("leaderboard",JSON.stringify(leaderboard));
+
+  renderLeaderboard();
+}
+
+function renderLeaderboard(){
+  const tbody=document.getElementById('leaderboardBody');
+  const leaderboard=JSON.parse(localStorage.getItem("leaderboard")||"[]");
+  tbody.innerHTML='';
+  leaderboard.forEach(p=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${p.name}</td><td>${p.score}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function showLeaderboard(){
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('quizScreen').style.display='none';
+  document.getElementById('leaderboardScreen').style.display='flex';
+  renderLeaderboard();
+}
+
+function backToStart(){
+  document.getElementById('leaderboardScreen').style.display='none';
+  document.getElementById('startScreen').style.display='flex';
+}
+
+// ---- Particle Background ----
+const canvas=document.getElementById('particleCanvas');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+
+let particles=[];
+for(let i=0;i<80;i++){
+  particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+1,dx:(Math.random()-0.5)*0.5,dy:(Math.random()-0.5)*0.5});
+}
+
+function drawHeart(x,y,size){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(size/50,size/50);
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.bezierCurveTo(-25,-25,-50,0,0,50);
+  ctx.bezierCurveTo(50,0,25,-25,0,0);
+  ctx.fillStyle='rgba(255,0,128,0.7)';
+  ctx.fill();
+  ctx.restore();
+}
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,255,255,0.6)';
+    ctx.fill();
+    p.x+=p.dx;p.y+=p.dy;
+    if(p.x<0||p.x>canvas.width)p.dx*=-1;
+    if(p.y<0||p.y>canvas.height)p.dy*=-1;
+  });
+  drawHeart(canvas.width/2,canvas.height/2,80);
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
 </body>
 </html>
