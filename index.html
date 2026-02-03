@@ -2,160 +2,172 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>For Dede 🤍</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Cinematic Love</title>
 <style>
-body{
+html,body{
   margin:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, #fff5f7, #fdecef);
-  font-family:'Poppins', sans-serif;
+  padding:0;
   overflow:hidden;
+  background:#000;
+  touch-action:none;
 }
-.container{ text-align:center; }
-
-/* ENVELOPE */
-.envelope{
-  position:relative;
-  width:220px;
-  height:140px;
-  cursor:pointer;
+canvas{
+  display:block;
 }
-
-/* base */
-.env-body{
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:#ffffff;
-  border-radius:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.12);
-  z-index:1;
-}
-
-/* flap */
-.env-flap{
-  position:absolute;
-  top:0; left:0;
-  width:0; height:0;
-  border-left:110px solid transparent;
-  border-right:110px solid transparent;
-  border-top:70px solid #fbcfe8;
-  transform-origin:top;
-  transition:transform .8s ease;
-  z-index:3;
-}
-
-/* heart seal */
-.seal{
-  position:absolute;
-  width:26px;
-  height:26px;
-  background:#f43f5e;
-  top:58px; left:97px;
-  transform:rotate(-45deg);
-  z-index:4;
-}
-.seal::before,.seal::after{
-  content:"";
-  position:absolute;
-  width:26px; height:26px;
-  background:inherit;
-  border-radius:50%;
-}
-.seal::before{ top:-13px; left:0; }
-.seal::after{ left:13px; top:0; }
-
-/* letter */
-.letter{
-  position:absolute;
-  width:190px;
-  height:110px;
-  background:#fff;
-  border-radius:12px;
-  top:20px; left:15px;
-  box-shadow:0 18px 36px rgba(0,0,0,.15);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:'Playfair Display', serif;
-  font-size:28px;
-  color:#e11d48;
-  transform:translateY(40px);
-  opacity:0;
-  transition:all .8s ease;
-  z-index:2;
-}
-
-.open .env-flap{
-  transform:rotateX(180deg);
-}
-.open .letter{
-  transform:translateY(-60px);
-  opacity:1;
-}
-
-/* floating hearts */
-.love{
-  position:absolute;
-  color:#fb7185;
-  pointer-events:none;
-}
-
-@keyframes loveUp{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(-140px) scale(1.3); }
-}
-@keyframes loveDown{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(140px) scale(1.1); }
-}
-
-.hint{ margin-top:22px; font-size:14px; color:#6b7280; }
 </style>
 </head>
 <body>
-
-<div class="container">
-  <div class="envelope" id="env">
-    <div class="env-flap"></div>
-    <div class="env-body"></div>
-    <div class="seal"></div>
-    <div class="letter">Dede 🤍</div>
-  </div>
-  <div class="hint">tap amplopnya 💌</div>
-</div>
+<canvas id="c"></canvas>
 
 <script>
-const env = document.getElementById('env');
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+resize();
+window.addEventListener("resize",resize);
 
-env.addEventListener('click', ()=>{
-  env.classList.toggle('open');
-  spawnLove(14);
-});
+function resize(){
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
 
-function spawnLove(n){
-  const r = env.getBoundingClientRect();
-  for(let i=0;i<n;i++){
-    const h = document.createElement('div');
-    h.className = 'love';
-    h.textContent = '❤';
-    h.style.left = (r.left + r.width/2 + (Math.random()*60-30))+'px';
-    h.style.top  = (r.top + r.height/2)+'px';
-    h.style.fontSize = (12 + Math.random()*16)+'px';
-    const dur = 2 + Math.random()*2;
-    const up = Math.random() > .5;
-    h.style.animation = `${up?'loveUp':'loveDown'} ${dur}s ease-out forwards`;
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(), dur*1000);
+const particles = [];
+const bgStars = [];
+const COUNT = innerWidth < 600 ? 900 : 1400;
+let phase = 0;
+let timer = 0;
+let targetPoints = [];
+
+class Particle{
+  constructor(){
+    this.reset();
+  }
+  reset(){
+    this.x = Math.random()*canvas.width;
+    this.y = Math.random()*canvas.height;
+    this.vx = 0;
+    this.vy = 0;
+    this.tx = this.x;
+    this.ty = this.y;
+    this.size = Math.random()<0.08 ? 2.2 : 1.2;
+    this.glow = Math.random()<0.08;
+    this.color = `hsl(${Math.random()*360},100%,70%)`;
+  }
+  update(){
+    this.x += (this.tx - this.x)*0.05;
+    this.y += (this.ty - this.y)*0.05;
+  }
+  draw(){
+    ctx.beginPath();
+    ctx.fillStyle = this.color;
+    if(this.glow){
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = this.color;
+    }
+    ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
   }
 }
-</script>
 
+class Star{
+  constructor(){
+    this.x = Math.random()*canvas.width;
+    this.y = Math.random()*canvas.height;
+    this.z = Math.random()*1+0.2;
+  }
+  update(){
+    this.y += this.z*0.2;
+    if(this.y>canvas.height){
+      this.y=0;
+      this.x=Math.random()*canvas.width;
+    }
+  }
+  draw(){
+    ctx.fillStyle="rgba(255,255,255,0.15)";
+    ctx.fillRect(this.x,this.y,1.2,1.2);
+  }
+}
+
+for(let i=0;i<COUNT;i++)particles.push(new Particle());
+for(let i=0;i<120;i++)bgStars.push(new Star());
+
+function textPoints(text){
+  const off = document.createElement("canvas");
+  off.width = canvas.width;
+  off.height = canvas.height;
+  const octx = off.getContext("2d");
+  octx.fillStyle="#fff";
+  octx.font=`bold ${canvas.width<600?70:110}px Arial`;
+  octx.textAlign="center";
+  octx.textBaseline="middle";
+  octx.fillText(text,canvas.width/2,canvas.height/2);
+
+  const img=octx.getImageData(0,0,off.width,off.height).data;
+  const pts=[];
+  for(let y=0;y<off.height;y+=4){
+    for(let x=0;x<off.width;x+=4){
+      if(img[(y*off.width+x)*4+3]>150){
+        pts.push({x,y});
+      }
+    }
+  }
+  return pts;
+}
+
+function heartPoints(){
+  const pts=[];
+  const cx=canvas.width/2;
+  const cy=canvas.height/2;
+  const s=canvas.width<600?9:12;
+  for(let t=0;t<Math.PI*2;t+=0.02){
+    const x=16*Math.pow(Math.sin(t),3);
+    const y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
+    pts.push({x:cx+x*s,y:cy+y*s});
+  }
+  return pts;
+}
+
+function assign(points){
+  targetPoints = points;
+  particles.forEach((p,i)=>{
+    const pt = targetPoints[i % targetPoints.length];
+    p.tx = pt.x;
+    p.ty = pt.y;
+  });
+}
+
+function scatter(){
+  particles.forEach(p=>{
+    p.tx = Math.random()*canvas.width;
+    p.ty = Math.random()*canvas.height;
+  });
+}
+
+function sequence(){
+  if(timer===0)assign(heartPoints());
+  if(timer===240){ scatter(); }
+  if(timer===380){ assign(textPoints("I LOVE YOU")); }
+  if(timer===620){ scatter(); }
+  if(timer===760){ assign(textPoints("DEA")); }
+  if(timer>1050) timer=0;
+}
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  bgStars.forEach(s=>{s.update();s.draw();});
+
+  sequence();
+  particles.forEach(p=>{
+    p.update();
+    p.draw();
+  });
+
+  timer++;
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
 </body>
 </html>
