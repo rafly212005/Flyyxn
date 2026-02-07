@@ -2,160 +2,427 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>For Dede 🤍</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-
+<title>GFFI DOMBA VS SERIGALA</title>
 <style>
 body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, #fff5f7, #fdecef);
-  font-family:'Poppins', sans-serif;
-  overflow:hidden;
+ margin:0;
+ font-family:Arial, sans-serif;
+ background:#05070c;
+ color:#fff;
+ text-align:center;
+ overflow-x:hidden;
 }
-.container{ text-align:center; }
+h3{margin:6px 0;font-size:1.2em}
 
-/* ENVELOPE */
-.envelope{
-  position:relative;
-  width:220px;
-  height:140px;
-  cursor:pointer;
+#hud{
+ display:flex;
+ justify-content:space-around;
+ font-size:1em;
+ margin-bottom:4px;
 }
 
-/* base */
-.env-body{
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:#ffffff;
-  border-radius:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.12);
-  z-index:1;
+#map{
+ position:relative;
+ width:95vw;
+ max-width:400px;
+ aspect-ratio: 3/5;
+ margin:8px auto;
+ background:#070a14;
+ border-radius:16px;
+ box-shadow:inset 0 0 25px #000;
+ overflow:hidden;
+ perspective:1000px;
 }
 
-/* flap */
-.env-flap{
-  position:absolute;
-  top:0; left:0;
-  width:0; height:0;
-  border-left:110px solid transparent;
-  border-right:110px solid transparent;
-  border-top:70px solid #fbcfe8;
-  transform-origin:top;
-  transition:transform .8s ease;
-  z-index:3;
+/* KORIDOR */
+.corridor{position:absolute;background:#333}
+.main{width:3%;height:55%;left:48%;top:22%}
+.branch{height:1%;}
+
+/* RUANGAN POLYGON */
+.room{
+ position:absolute;
+ width:36%;
+ height:18%;
+ padding-top:3px;
+ color:#fff;
+ background:#0b1022;
+ box-shadow:
+  inset 0 0 18px currentColor,
+  inset 0 0 35px rgba(0,0,0,.9);
+ transition:.6s;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ font-size:clamp(0.7em, 2.5vw, 1.2em);
+ cursor:pointer;
+ overflow:hidden;
 }
 
-/* heart seal */
-.seal{
-  position:absolute;
-  width:26px;
-  height:26px;
-  background:#f43f5e;
-  top:58px; left:97px;
-  transform:rotate(-45deg);
-  z-index:4;
-}
-.seal::before,.seal::after{
-  content:"";
-  position:absolute;
-  width:26px; height:26px;
-  background:inherit;
-  border-radius:50%;
-}
-.seal::before{ top:-13px; left:0; }
-.seal::after{ left:13px; top:0; }
+/* Bentuk unik tiap ruangan */
+.room:nth-child(1){clip-path:polygon(50% 0%,100% 38%,81% 100%,19% 100%,0% 38%);}
+.room:nth-child(2){clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0 75%,0 25%);}
+.room:nth-child(3){clip-path:circle(50% at 50% 50%);}
+.room:nth-child(4){clip-path:polygon(0 0,100% 0,80% 100%,20% 100%);}
+.room:nth-child(5){clip-path:polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);}
+.room:nth-child(6){clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0 50%);}
+.room:nth-child(7){clip-path:polygon(0 0,100% 0,100% 50%,50% 100%,0 50%);}
 
-/* letter */
-.letter{
-  position:absolute;
-  width:190px;
-  height:110px;
-  background:#fff;
-  border-radius:12px;
-  top:20px; left:15px;
-  box-shadow:0 18px 36px rgba(0,0,0,.15);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:'Playfair Display', serif;
-  font-size:28px;
-  color:#e11d48;
-  transform:translateY(40px);
-  opacity:0;
-  transition:all .8s ease;
-  z-index:2;
+/* Efek glow partikel ruangan */
+.room::before{
+ content:'';
+ position:absolute;
+ inset:0;
+ background:radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 70%);
+ pointer-events:none;
+ animation:roomGlow 3s infinite alternate;
+ border-radius:inherit;
+}
+@keyframes roomGlow{
+ 0%{transform:scale(0.95);opacity:0.3;}
+ 100%{transform:scale(1.05);opacity:0.6;}
 }
 
-.open .env-flap{
-  transform:rotateX(180deg);
+.dim{
+ box-shadow:
+  inset 0 0 6px currentColor,
+  inset 0 0 40px rgba(0,0,0,.95);
+ opacity:.6;
 }
-.open .letter{
-  transform:translateY(-60px);
-  opacity:1;
-}
-
-/* floating hearts */
-.love{
-  position:absolute;
-  color:#fb7185;
-  pointer-events:none;
+.active{
+ box-shadow:
+  inset 0 0 28px currentColor,
+  inset 0 0 15px rgba(0,0,0,.7);
+ opacity:1;
 }
 
-@keyframes loveUp{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(-140px) scale(1.3); }
+/* FLICKER */
+.flicker{
+ animation:flicker 0.15s infinite alternate;
 }
-@keyframes loveDown{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(140px) scale(1.1); }
+@keyframes flicker{
+ from{opacity:.4}
+ to{opacity:.8}
 }
 
-.hint{ margin-top:22px; font-size:14px; color:#6b7280; }
+/* PINTU */
+.door{
+ position:absolute;
+ width:8%;
+ height:3%;
+ background:#eee;
+ bottom:-8%;
+ left:38%;
+ transition:1s;
+ transform-style:preserve-3d;
+ z-index:10; /* agar tetap di atas trail */
+}
+.open{
+ transform:rotateY(75deg) scale(1.1);
+ box-shadow:0 0 12px #37ffeb;
+}
+
+/* DOMBA */
+.sheep{
+ font-size:clamp(1em, 5vw, 2em);
+ text-shadow: 0 0 8px #37ffeb, 0 0 16px #37ffeb;
+ transition:transform 0.3s;
+}
+.sheep.player{animation:float 1.2s infinite alternate;}
+@keyframes float{
+ 0%{transform:translateY(0px);}
+ 100%{transform:translateY(-6px);}
+}
+
+/* TAMAN */
+#taman{
+ position:absolute;
+ top:42%;
+ left:28%;
+ width:44%;
+ height:16%;
+ border-radius:50%;
+ background:#37ffeb;
+ color:#000;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-weight:bold;
+ box-shadow:0 0 30px #37ffebaa;
+ font-size:clamp(0.9em, 3vw, 1.2em);
+}
+
+/* SERIGALA */
+#wolf{
+ position:absolute;
+ left:45%;
+ top:46%;
+ font-size:clamp(1.8em, 6vw, 3em);
+ text-shadow:0 0 12px #ff4d4d,0 0 20px #ff4d4d;
+ transition:transform 0.1s linear;
+ z-index:5;
+}
+
+/* TRAIL WOLF */
+.trail{
+ position:absolute;
+ width:1.5em;
+ height:1.5em;
+ font-size:inherit;
+ opacity:0.3;
+ pointer-events:none;
+ filter:blur(2px);
+ text-shadow:0 0 8px #ff4d4d,0 0 16px #ff4d4d;
+ animation:fadeTrail 0.5s forwards;
+}
+@keyframes fadeTrail{
+ to{opacity:0; transform:scale(1.3);}
+}
+
+/* Batasi jumlah trail */
+.trail-limiter{
+ max-trails:10;
+}
+
+/* OVERLAY */
+.overlay{
+ position:fixed;inset:0;
+ background:rgba(0,0,0,.9);
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center;
+ gap:16px;
+ font-size:2em;
+}
+.playagain{
+ padding:8px 16px;
+ border:none;
+ border-radius:12px;
+ font-size:1em;
+ background:#37ffeb;
+ font-weight:bold;
+ cursor:pointer;
+}
 </style>
 </head>
 <body>
+<h3>🐏 GFFI DOMBA VS SERIGALA 🐺</h3>
 
-<div class="container">
-  <div class="envelope" id="env">
-    <div class="env-flap"></div>
-    <div class="env-body"></div>
-    <div class="seal"></div>
-    <div class="letter">Dede 🤍</div>
-  </div>
-  <div class="hint">tap amplopnya 💌</div>
+<div id="hud">
+ <div id="info"></div>
+ <div id="count"></div>
+ <div id="score"></div>
+</div>
+
+<div id="map">
+ <div class="corridor main"></div>
+ <div class="corridor branch" style="top:28%;left:10%;width:36%"></div>
+ <div class="corridor branch" style="top:28%;right:10%;width:36%"></div>
+ <div class="corridor branch" style="top:56%;left:10%;width:36%"></div>
+ <div class="corridor branch" style="top:56%;right:10%;width:36%"></div>
+
+ <div class="room" style="color:#ff4d4d">KANTOR FLYYXN<div class="door"></div></div>
+ <div class="room" style="color:#4dffea">PABRIK GFFI<div class="door"></div></div>
+ <div class="room" style="color:#9d4dff">GUDANG GFFI<div class="door"></div></div>
+ <div class="room" style="color:#ffb84d">KEAMANAN GFFI<div class="door"></div></div>
+ <div class="room" style="color:#4dff6a">RAPAT ADMIN<div class="door"></div></div>
+ <div class="room" style="color:#ff4dd2">BANK GFFI<div class="door"></div></div>
+ <div class="room" style="color:#4da6ff">KANTIN GFFI<div class="door"></div></div>
+
+ <div id="taman">TAMAN</div>
+ <div id="wolf">🐺</div>
 </div>
 
 <script>
-const env = document.getElementById('env');
+const rooms=[...document.querySelectorAll(".room")];
+const wolf=document.getElementById("wolf");
+const info=document.getElementById("info");
+const count=document.getElementById("count");
+const scoreBox=document.getElementById("score");
+const map=document.getElementById("map");
 
-env.addEventListener('click', ()=>{
-  env.classList.toggle('open');
-  spawnLove(14);
+let sheep=[],phase="hide";
+let score = 0;
+let high=localStorage.getItem("gffi_high")||0;
+let countdownInterval=null;
+let trailCount = 0;
+const maxTrail = 12; // batasi trail
+
+if(Date.now() - (localStorage.getItem("gffi_reset")||0) > 24*60*60*1000){
+ score = 0;
+ localStorage.setItem("gffi_reset", Date.now());
+}
+scoreBox.textContent="🏆 "+high+" | ⭐ "+score;
+
+const roomPos = [
+ {top:5,left:5},{top:5,right:5},
+ {top:20,left:3},{top:20,right:3},
+ {top:70,left:5},{top:70,right:5},
+ {top:85,left:34}
+];
+roomPos.forEach((p,i)=>{
+ rooms[i].style.top=p.top+"%";
+ if(p.left!==undefined) rooms[i].style.left=p.left+"%";
+ if(p.right!==undefined) rooms[i].style.right=p.right+"%";
 });
 
-function spawnLove(n){
-  const r = env.getBoundingClientRect();
-  for(let i=0;i<n;i++){
-    const h = document.createElement('div');
-    h.className = 'love';
-    h.textContent = '❤';
-    h.style.left = (r.left + r.width/2 + (Math.random()*60-30))+'px';
-    h.style.top  = (r.top + r.height/2)+'px';
-    h.style.fontSize = (12 + Math.random()*16)+'px';
-    const dur = 2 + Math.random()*2;
-    const up = Math.random() > .5;
-    h.style.animation = `${up?'loveUp':'loveDown'} ${dur}s ease-out forwards`;
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(), dur*1000);
-  }
+function reset(){
+ document.querySelectorAll(".overlay").forEach(o=>o.remove());
+ wolf.style.left="45%";
+ wolf.style.top="46%";
+ phase="hide";
+ spawn();
+ scoreBox.textContent="🏆 "+high+" | ⭐ "+score;
+ if(countdownInterval) clearInterval(countdownInterval);
+ countdown();
 }
-</script>
 
+function spawn(){
+ sheep=[];
+ rooms.forEach(r=>r.querySelectorAll(".sheep").forEach(s=>s.remove()));
+ for(let i=0;i<15;i++)
+  sheep.push({room:Math.floor(Math.random()*rooms.length),player:i===0});
+ draw();
+}
+
+function draw(){
+ rooms.forEach(r=>r.querySelectorAll(".sheep").forEach(s=>s.remove()));
+ sheep.forEach(s=>{
+  const d=document.createElement("div");
+  d.className="sheep "+(s.player?"player":"");
+  d.textContent=s.player?"🐏":"🐑";
+  rooms[s.room].appendChild(d);
+ });
+ count.textContent="🐑 Total: "+sheep.length;
+}
+
+rooms.forEach((r,i)=>{
+ r.onclick=()=>{if(phase==="hide"){sheep[0].room=i;draw();}}
+});
+
+setInterval(()=>{
+ if(phase!=="hide")return;
+ sheep.forEach((s)=>{
+  if(!s.player && Math.random()<0.35){
+   s.room=Math.floor(Math.random()*rooms.length);
+  }
+ });
+ draw();
+},1800);
+
+function countdown(){
+ let t=12;
+ info.textContent="MULAI: "+t;
+ countdownInterval = setInterval(()=>{
+  t--;
+  if(t>=0) info.textContent="WAKTU: "+t;
+  if(t<=0){
+    clearInterval(countdownInterval);
+    search();
+  }
+ },1000);
+}
+
+function createTrail(x,y){
+ if(trailCount >= maxTrail) return; // batasi trail
+ trailCount++;
+ const t = document.createElement('div');
+ t.className='trail';
+ t.style.left = x+'px';
+ t.style.top = y+'px';
+ map.appendChild(t);
+ setTimeout(()=>{
+   t.remove();
+   trailCount--;
+ },500);
+}
+
+function search(){
+ phase="search";
+ rooms.forEach(r=>{
+  r.classList.add("dim","flicker");
+ });
+
+ let checks=Math.random()<0.5?1:2;
+ let order=[...Array(rooms.length).keys()]
+  .sort(()=>Math.random()-0.5)
+  .slice(0,checks);
+
+ let delay = 0;
+ order.forEach((idx,i)=>{
+  setTimeout(()=>hunt(idx,i===order.length-1),delay);
+  delay += 4500;
+ });
+}
+
+function hunt(idx,last){
+ const room=rooms[idx];
+ const door=room.querySelector(".door");
+ room.classList.remove("flicker");
+ room.classList.add("active");
+
+ const r=room.getBoundingClientRect();
+ const m=map.getBoundingClientRect();
+ const targetX = r.left - m.left + map.clientWidth*0.12;
+ const targetY = r.top - m.top + map.clientHeight*0.12;
+ const speed = map.clientWidth/160;
+
+ function moveWolf(){
+  const cx = wolf.offsetLeft;
+  const cy = wolf.offsetTop;
+  const dx = targetX - cx;
+  const dy = targetY - cy;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+
+  if(dist < speed){
+    wolf.style.left = targetX + "px";
+    wolf.style.top = targetY + "px";
+    door.classList.add("open");
+    setTimeout(()=>{
+      const hit=sheep.filter(s=>s.room===idx);
+      if(hit.some(s=>s.player)){end(false);return;}
+      sheep=sheep.filter(s=>s.room!==idx);
+      draw();
+      door.classList.remove("open");
+      room.classList.remove("active");
+      if(last) setTimeout(()=>end(true),1500);
+    },800);
+    return;
+  }
+  // Cyber chase trail
+  createTrail(cx,cy);
+
+  wolf.style.left = cx + dx/dist*speed + "px";
+  wolf.style.top = cy + dy/dist*speed + "px";
+  requestAnimationFrame(moveWolf);
+ }
+ requestAnimationFrame(moveWolf);
+}
+
+function end(win){
+ if(win){
+  score += 1;
+  if(score>high){
+   high=score;
+   localStorage.setItem("gffi_high",high);
+  }
+ }
+ scoreBox.textContent="🏆 "+high+" | ⭐ "+score;
+
+ const o=document.createElement("div");
+ o.className="overlay";
+ o.innerHTML=`<div>${win?"🐏 MENANG":"💀 KETANGKAP"}</div>`;
+ const b=document.createElement("button");
+ b.className="playagain";
+ b.textContent="MAIN LAGI";
+ b.onclick=reset;
+ o.appendChild(b);
+ document.body.appendChild(o);
+}
+
+reset();
+</script>
 </body>
 </html>
