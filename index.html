@@ -2,159 +2,310 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>For Dede 🤍</title>
+<title>GFFI Guess</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-
 <style>
+*{box-sizing:border-box}
 body{
   margin:0;
-  height:100vh;
+  font-family:Arial,sans-serif;
+  background:#000;
+  color:#fff;
+  overflow:hidden;
+}
+
+/* FIRE */
+#fire{
+  position:fixed;
+  inset:0;
+  z-index:0;
+}
+
+/* OVERLAY START */
+#overlay{
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at top,#ff5500,#000);
   display:flex;
   align-items:center;
   justify-content:center;
-  background: linear-gradient(135deg, #fff5f7, #fdecef);
-  font-family:'Poppins', sans-serif;
-  overflow:hidden;
+  z-index:5;
 }
-.container{ text-align:center; }
-
-/* ENVELOPE */
-.envelope{
-  position:relative;
-  width:220px;
-  height:140px;
+#panel{
+  background:#111;
+  padding:24px;
+  border-radius:14px;
+  width:85%;
+  max-width:320px;
+  text-align:center;
+}
+input,button{
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  font-size:16px;
+}
+button{
+  margin-top:12px;
+  font-weight:bold;
   cursor:pointer;
 }
 
-/* base */
-.env-body{
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:#ffffff;
-  border-radius:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.12);
-  z-index:1;
+/* UI */
+#ui{
+  position:relative;
+  z-index:2;
+  padding:10px;
+  display:flex;
+  justify-content:space-between;
 }
 
-/* flap */
-.env-flap{
-  position:absolute;
-  top:0; left:0;
-  width:0; height:0;
-  border-left:110px solid transparent;
-  border-right:110px solid transparent;
-  border-top:70px solid #fbcfe8;
-  transform-origin:top;
-  transition:transform .8s ease;
-  z-index:3;
+/* BOARD */
+#board{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  padding:12px;
 }
-
-/* heart seal */
-.seal{
-  position:absolute;
-  width:26px;
-  height:26px;
-  background:#f43f5e;
-  top:58px; left:97px;
-  transform:rotate(-45deg);
-  z-index:4;
-}
-.seal::before,.seal::after{
-  content:"";
-  position:absolute;
-  width:26px; height:26px;
-  background:inherit;
-  border-radius:50%;
-}
-.seal::before{ top:-13px; left:0; }
-.seal::after{ left:13px; top:0; }
-
-/* letter */
-.letter{
-  position:absolute;
-  width:190px;
-  height:110px;
-  background:#fff;
-  border-radius:12px;
-  top:20px; left:15px;
-  box-shadow:0 18px 36px rgba(0,0,0,.15);
+.cell{
+  aspect-ratio:1/1;
+  background:#111;
+  border-radius:10px;
+  font-size:26px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-family:'Playfair Display', serif;
-  font-size:28px;
-  color:#e11d48;
-  transform:translateY(40px);
+  cursor:pointer;
+}
+.cell span{opacity:0;transition:.2s}
+.cell.open span{opacity:1}
+.cell.open{background:#222}
+
+/* SHAKE */
+.shake{animation:shake .15s infinite}
+@keyframes shake{
+  0%{transform:translate(0,0)}
+  25%{transform:translate(5px,0)}
+  50%{transform:translate(-5px,0)}
+  75%{transform:translate(0,5px)}
+  100%{transform:translate(0,0)}
+}
+
+/* CINEMATIC END */
+#endScreen{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:6;
   opacity:0;
-  transition:all .8s ease;
-  z-index:2;
-}
-
-.open .env-flap{
-  transform:rotateX(180deg);
-}
-.open .letter{
-  transform:translateY(-60px);
-  opacity:1;
-}
-
-/* floating hearts */
-.love{
-  position:absolute;
-  color:#fb7185;
   pointer-events:none;
+  transition:.6s;
 }
-
-@keyframes loveUp{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(-140px) scale(1.3); }
+#endScreen.show{
+  opacity:1;
+  pointer-events:auto;
 }
-@keyframes loveDown{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(140px) scale(1.1); }
+#endBox{
+  text-align:center;
+  animation:zoomIn .8s ease;
 }
-
-.hint{ margin-top:22px; font-size:14px; color:#6b7280; }
+#endTitle{
+  font-size:42px;
+  font-weight:bold;
+  text-shadow:0 0 30px currentColor;
+}
+#endScore{
+  margin-top:10px;
+  font-size:20px;
+  opacity:.8;
+}
+.flash{
+  animation:flash .4s;
+}
+@keyframes zoomIn{
+  from{transform:scale(.3);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+@keyframes flash{
+  from{background:#fff}
+  to{background:rgba(0,0,0,.85)}
+}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="envelope" id="env">
-    <div class="env-flap"></div>
-    <div class="env-body"></div>
-    <div class="seal"></div>
-    <div class="letter">Dede 🤍</div>
+<canvas id="fire"></canvas>
+
+<!-- START SCREEN -->
+<div id="overlay">
+  <div id="panel">
+    <h2>🔥 GFFI GUESS 🔥</h2>
+    <input id="nameInput" placeholder="Nama pemain">
+    <button onclick="startGame()">MULAI</button>
   </div>
-  <div class="hint">tap amplopnya 💌</div>
+</div>
+
+<!-- UI -->
+<div id="ui">
+  <div>👤 <span id="playerName">-</span></div>
+  <div>❤️ <span id="life">2</span></div>
+  <div>🔥 <span id="score">0</span></div>
+</div>
+
+<div id="board"></div>
+
+<!-- END CINEMATIC -->
+<div id="endScreen">
+  <div id="endBox">
+    <div id="endTitle"></div>
+    <div id="endScore"></div>
+  </div>
 </div>
 
 <script>
-const env = document.getElementById('env');
+/* ===== THEME ===== */
+const themes=[
+  {bg:"#000", panel:"#ff5500", hue:20},
+  {bg:"#001a2e", panel:"#00cfff", hue:190},
+  {bg:"#0b0014", panel:"#ff00ff", hue:300},
+  {bg:"#001f2f", panel:"#7ddcff", hue:210},
+  {bg:"#001b10", panel:"#3cff87", hue:120}
+];
+let currentTheme=themes[0];
 
-env.addEventListener('click', ()=>{
-  env.classList.toggle('open');
-  spawnLove(14);
-});
+/* ===== GAME ===== */
+const emojis=["🐋","🐳","🐟","🐠","🐡","🦐","🦞","🦀","🦑","🐙","🐧","🦭","🦈","🐬"];
+let bombs=[],life=2,score=0,opened=0,started=false,gameEnd=false;
 
-function spawnLove(n){
-  const r = env.getBoundingClientRect();
-  for(let i=0;i<n;i++){
-    const h = document.createElement('div');
-    h.className = 'love';
-    h.textContent = '❤';
-    h.style.left = (r.left + r.width/2 + (Math.random()*60-30))+'px';
-    h.style.top  = (r.top + r.height/2)+'px';
-    h.style.fontSize = (12 + Math.random()*16)+'px';
-    const dur = 2 + Math.random()*2;
-    const up = Math.random() > .5;
-    h.style.animation = `${up?'loveUp':'loveDown'} ${dur}s ease-out forwards`;
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(), dur*1000);
-  }
+const board=document.getElementById("board");
+const overlay=document.getElementById("overlay");
+const lifeUI=document.getElementById("life");
+const scoreUI=document.getElementById("score");
+const nameUI=document.getElementById("playerName");
+const panel=document.getElementById("panel");
+
+/* ===== START ===== */
+function startGame(){
+  nameUI.textContent=document.getElementById("nameInput").value||"Player";
+
+  currentTheme=themes[Math.random()*themes.length|0];
+  document.body.style.background=currentTheme.bg;
+  panel.style.boxShadow=`0 0 40px ${currentTheme.panel}`;
+
+  overlay.style.display="none";
+  started=true;
+  resetGame();
 }
+
+/* ===== RESET ===== */
+function resetGame(){
+  board.innerHTML="";
+  bombs=[];life=2;score=0;opened=0;gameEnd=false;
+  document.getElementById("endScreen").classList.remove("show");
+
+  while(bombs.length<3){
+    let r=Math.random()*25|0;
+    if(!bombs.includes(r))bombs.push(r);
+  }
+
+  for(let i=0;i<25;i++){
+    const c=document.createElement("div");
+    c.className="cell";
+    const s=document.createElement("span");
+    s.textContent=emojis[Math.random()*emojis.length|0];
+    c.appendChild(s);
+    c.onclick=()=>clickCell(c,i);
+    board.appendChild(c);
+  }
+  updateUI();
+}
+
+/* ===== CLICK ===== */
+function clickCell(c,i){
+  if(!started||gameEnd||c.classList.contains("open"))return;
+  c.classList.add("open");
+
+  if(bombs.includes(i)){
+    c.firstChild.textContent="💣";
+    life--;
+    boom();
+    if(life<=0) endGame(false);
+  }else{
+    score+=10;
+    opened++;
+    if(opened===22) endGame(true);
+  }
+  updateUI();
+}
+
+function updateUI(){
+  lifeUI.textContent=life;
+  scoreUI.textContent=score;
+}
+
+/* ===== END ===== */
+const endScreen=document.getElementById("endScreen");
+const endTitle=document.getElementById("endTitle");
+const endScore=document.getElementById("endScore");
+
+function endGame(win){
+  gameEnd=true;
+  boom();
+
+  if(win){
+    endScreen.classList.add("flash");
+    endTitle.style.color="gold";
+    endTitle.textContent="🔥 YOU WIN 🔥";
+  }else{
+    endTitle.style.color="red";
+    endTitle.textContent="💀 GAME OVER";
+  }
+  endScore.textContent="Skor: "+score;
+
+  setTimeout(()=>endScreen.classList.add("show"),300);
+}
+
+function boom(){
+  document.body.classList.add("shake");
+  setTimeout(()=>document.body.classList.remove("shake"),300);
+}
+
+/* ===== FIRE ===== */
+const canvas=document.getElementById("fire");
+const ctx=canvas.getContext("2d");
+let w,h,fire=[];
+function resize(){w=canvas.width=innerWidth;h=canvas.height=innerHeight}
+resize();onresize=resize;
+
+function drawFire(){
+  ctx.clearRect(0,0,w,h);
+  fire.push({
+    x:Math.random()*w,
+    y:h,
+    r:Math.random()*3+2,
+    v:Math.random()*1.5+1,
+    a:1,
+    h:currentTheme.hue+Math.random()*30
+  });
+  fire.forEach(p=>{
+    p.y-=p.v; p.a-=0.02;
+    ctx.beginPath();
+    ctx.fillStyle=`hsla(${p.h},100%,60%,${p.a})`;
+    ctx.shadowBlur=20;
+    ctx.shadowColor=ctx.fillStyle;
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  fire=fire.filter(p=>p.a>0);
+  requestAnimationFrame(drawFire);
+}
+drawFire();
 </script>
 
 </body>
