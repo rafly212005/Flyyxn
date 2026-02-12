@@ -2,159 +2,208 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>For Dede 🤍</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>GFFI Loading Partikel Dramatis</title>
 <style>
-body{
+html,body{
   margin:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, #fff5f7, #fdecef);
-  font-family:'Poppins', sans-serif;
-  overflow:hidden;
-}
-.container{ text-align:center; }
-
-/* ENVELOPE */
-.envelope{
-  position:relative;
-  width:220px;
-  height:140px;
-  cursor:pointer;
-}
-
-/* base */
-.env-body{
-  position:absolute;
   width:100%;
   height:100%;
-  background:#ffffff;
-  border-radius:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.12);
-  z-index:1;
+  overflow:hidden;
+  background:black;
+  font-family:Arial, sans-serif;
 }
-
-/* flap */
-.env-flap{
-  position:absolute;
-  top:0; left:0;
-  width:0; height:0;
-  border-left:110px solid transparent;
-  border-right:110px solid transparent;
-  border-top:70px solid #fbcfe8;
-  transform-origin:top;
-  transition:transform .8s ease;
-  z-index:3;
+canvas{position:fixed;inset:0}
+#loader{
+  position:fixed;
+  bottom:64px;
+  width:100%;
+  text-align:center;
+  color:white;
+  z-index:10;
 }
-
-/* heart seal */
-.seal{
-  position:absolute;
-  width:26px;
-  height:26px;
-  background:#f43f5e;
-  top:58px; left:97px;
-  transform:rotate(-45deg);
-  z-index:4;
+#status{
+  font-size:clamp(14px,4vw,22px);
+  letter-spacing:3px;
+  margin-bottom:12px;
 }
-.seal::before,.seal::after{
-  content:"";
-  position:absolute;
-  width:26px; height:26px;
-  background:inherit;
-  border-radius:50%;
+#barBox{
+  width:78vw;
+  max-width:420px;
+  height:14px;
+  border:1px solid rgba(255,255,255,.4);
+  margin:auto;
+  overflow:hidden;
+  border-radius:7px;
 }
-.seal::before{ top:-13px; left:0; }
-.seal::after{ left:13px; top:0; }
-
-/* letter */
-.letter{
-  position:absolute;
-  width:190px;
-  height:110px;
-  background:#fff;
-  border-radius:12px;
-  top:20px; left:15px;
-  box-shadow:0 18px 36px rgba(0,0,0,.15);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:'Playfair Display', serif;
-  font-size:28px;
-  color:#e11d48;
-  transform:translateY(40px);
+#bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,red,blue,green);
+  border-radius:7px;
+}
+#flash{
+  position:fixed;
+  inset:0;
+  background:white;
   opacity:0;
-  transition:all .8s ease;
-  z-index:2;
-}
-
-.open .env-flap{
-  transform:rotateX(180deg);
-}
-.open .letter{
-  transform:translateY(-60px);
-  opacity:1;
-}
-
-/* floating hearts */
-.love{
-  position:absolute;
-  color:#fb7185;
   pointer-events:none;
+  z-index:99;
 }
-
-@keyframes loveUp{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(-140px) scale(1.3); }
-}
-@keyframes loveDown{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(140px) scale(1.1); }
-}
-
-.hint{ margin-top:22px; font-size:14px; color:#6b7280; }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="envelope" id="env">
-    <div class="env-flap"></div>
-    <div class="env-body"></div>
-    <div class="seal"></div>
-    <div class="letter">Dede 🤍</div>
-  </div>
-  <div class="hint">tap amplopnya 💌</div>
+<script>
+if(sessionStorage.getItem("gffi_loaded")){
+  location.replace("https://gffiv04.netlify.app/");
+}
+</script>
+
+<div id="loader">
+  <div id="status">LOADING</div>
+  <div id="barBox"><div id="bar"></div></div>
 </div>
 
+<div id="flash"></div>
+<canvas id="c"></canvas>
+
 <script>
-const env = document.getElementById('env');
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+function resize(){ c.width = innerWidth; c.height = innerHeight; }
+resize(); addEventListener("resize", resize);
+const SCALE = Math.min(innerWidth, innerHeight)/800;
 
-env.addEventListener('click', ()=>{
-  env.classList.toggle('open');
-  spawnLove(14);
-});
+/* ===== Warp Partikel ===== */
+const warpParticles = [];
+const WARP_COUNT = innerWidth<600 ? 300 : 500;
+let warpSpeed = .008;
+for(let i=0; i<WARP_COUNT; i++){
+  warpParticles.push({x:(Math.random()-.5)*2, y:(Math.random()-.5)*2, z:Math.random()});
+}
 
-function spawnLove(n){
-  const r = env.getBoundingClientRect();
-  for(let i=0;i<n;i++){
-    const h = document.createElement('div');
-    h.className = 'love';
-    h.textContent = '❤';
-    h.style.left = (r.left + r.width/2 + (Math.random()*60-30))+'px';
-    h.style.top  = (r.top + r.height/2)+'px';
-    h.style.fontSize = (12 + Math.random()*16)+'px';
-    const dur = 2 + Math.random()*2;
-    const up = Math.random() > .5;
-    h.style.animation = `${up?'loveUp':'loveDown'} ${dur}s ease-out forwards`;
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(), dur*1000);
+/* ===== Text Particle ===== */
+let textParticles = [];
+let textStyles = ["G","F","F","I","GFFI","FLYYXN GFFI"];
+let currentStyle = 0;
+
+function makeText(txt){
+  const off = document.createElement("canvas");
+  off.width = c.width; off.height = c.height;
+  const o = off.getContext("2d");
+  o.clearRect(0,0,off.width,off.height);
+
+  let fontSize = txt.length > 6 ? 60*SCALE : 100*SCALE;
+  o.font = `bold ${fontSize}px Arial`;
+  o.textAlign = "center"; o.textBaseline = "middle";
+  o.fillStyle = "white";
+  o.fillText(txt, off.width/2, off.height/2);
+
+  const d = o.getImageData(0,0,off.width,off.height).data;
+  textParticles = [];
+  for(let y=0; y<off.height; y+=4){
+    for(let x=0; x<off.width; x+=4){
+      if(d[(y*off.width + x)*4] > 200){
+        textParticles.push({
+          x: Math.random()*c.width,
+          y: Math.random()*c.height,
+          tx: x,
+          ty: y,
+          vx: Math.random()*4-2,
+          vy: Math.random()*4-2
+        });
+      }
+    }
   }
 }
+
+/* ===== DRAW ===== */
+let mode="warp";
+function draw(){
+  ctx.fillStyle="rgba(0,0,0,.35)";
+  ctx.fillRect(0,0,c.width,c.height);
+  const cx=c.width/2, cy=c.height/2;
+
+  // Warp particles
+  warpParticles.forEach(p=>{
+    p.z -= warpSpeed;
+    if(p.z <= 0) p.z = 1;
+    const x = cx + p.x*(1/p.z)*420*SCALE;
+    const y = cy + p.y*(1/p.z)*420*SCALE;
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(x,y,1.5*SCALE,0,Math.PI*2);
+    ctx.fill();
+  });
+
+  // Text particles
+  if(mode==="text"){
+    textParticles.forEach(p=>{
+      if(p.phase === "explode"){
+        p.x += p.vx; p.y += p.vy;
+        p.vx *= 0.95; p.vy *= 0.95;
+        if(Math.abs(p.vx)+Math.abs(p.vy) < 0.1) p.phase = "assemble";
+      } 
+      if(!p.phase || p.phase === "assemble"){
+        p.x += (p.tx - p.x)*0.08;
+        p.y += (p.ty - p.y)*0.08;
+      }
+      ctx.fillStyle="white";
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,3*SCALE,0,Math.PI*2);
+      ctx.fill();
+    });
+  }
+
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* ===== LOADING BAR ===== */
+const bar = document.getElementById("bar");
+const status = document.getElementById("status");
+const TOTAL_DURATION = 14000; // 14 detik
+const start = performance.now();
+
+function loading(now){
+  const t = now - start;
+  const p = Math.min(100,(t/TOTAL_DURATION)*100);
+  bar.style.width = p+"%";
+  warpSpeed = .008 + (p/100)*.02;
+  if(t < TOTAL_DURATION) requestAnimationFrame(loading);
+}
+requestAnimationFrame(loading);
+
+/* ===== Timeline Otomatis ===== */
+function scheduleTextSwitches(){
+  const steps = 6; // jumlah teks
+  for(let i=0;i<steps;i++){
+    let delay = 1200 + i*(TOTAL_DURATION-1200)/steps; // mulai 1.2 detik lalu dibagi rata
+    setTimeout(()=>{
+      mode="text";
+      textParticles.forEach(p=>p.phase="explode");
+      setTimeout(()=>{
+        makeText(textStyles[currentStyle]);
+        currentStyle = (currentStyle+1)%textStyles.length;
+      },700);
+    }, delay);
+  }
+  // Kembali warp di akhir
+  setTimeout(()=>{mode="warp"}, TOTAL_DURATION);
+  // MASUK
+  setTimeout(()=>{
+    status.innerText="MASUK";
+    const f = document.getElementById("flash");
+    f.style.transition="opacity .25s";
+    f.style.opacity=1;
+    setTimeout(()=>{
+      sessionStorage.setItem("gffi_loaded","true");
+      location.replace("https://gffiv04.netlify.app/");
+    },300);
+  }, TOTAL_DURATION+300);
+}
+scheduleTextSwitches();
 </script>
 
 </body>
