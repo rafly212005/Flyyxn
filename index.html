@@ -2,160 +2,484 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>For Dede 🤍</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-
+<title>GFFI</title>
 <style>
+:root{
+ --bg:#000;
+ --text:#fff;
+ --box:rgba(0,0,0,.75);
+ --n1:#00ffff;--n2:#ff00ff;--n3:#00ff66;
+}
+.light{
+ --bg:#f5f5f5;
+ --text:#000;
+ --box:#fff;
+}
+*{box-sizing:border-box}
 body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, #fff5f7, #fdecef);
-  font-family:'Poppins', sans-serif;
-  overflow:hidden;
+ margin:0;
+ background:var(--bg);
+ color:var(--text);
+ font-family:Arial,sans-serif;
+ text-align:center;
+ overflow-x:hidden;
+ transition:.4s;
 }
-.container{ text-align:center; }
+canvas{
+ position:fixed;
+ inset:0;
+ z-index:0;
+}
+header,nav,.page,footer,.topbar{
+ position:relative;
+ z-index:1;
+ padding-left:12px;
+ padding-right:12px;
+}
+/* TOP */
+.topbar{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:10px;
+ font-size:13px;
+}
+.toggle{cursor:pointer;font-size:20px}
+/* TITLE */
+h1{
+ font-size:36px;
+ color:var(--n1);
+ text-shadow:0 0 22px var(--n1);
+ animation:pulse 4s infinite;
+}
+@keyframes pulse{
+ 50%{text-shadow:0 0 36px var(--n3)}
+}
+/* MENU */
+nav{
+ display:flex;
+ flex-wrap:wrap;
+ gap:8px;
+ justify-content:center;
+ margin-bottom:10px;
+}
+.btn{
+ padding:10px 14px;
+ border-radius:12px;
+ background:#4CAF50;
+ font-weight:bold;
+ cursor:pointer;
+ transition:.3s;
+ font-size:14px;
+ min-width:90px;
+}
+.btn:hover,.btn.active{
+ background:#66ff66;
+ box-shadow:0 0 18px #66ff66;
+ transform:scale(1.05);
+}
+/* PAGE */
+.page{
+ display:none;
+ opacity:0;
+ transform:translateY(20px);
+ transition:.4s;
+}
+.page.show{
+ display:block;
+ opacity:1;
+ transform:none;
+}
+h2{
+ color:#66ffff;
+ font-size:18px;
+}
+/* BOX */
+.neon{
+ width:100%;
+ max-width:520px;
+ margin:16px auto;
+ padding:18px;
+ border-radius:18px;
+ background:var(--box);
+ border:2px solid;
+ animation:glow 6s infinite;
+}
+@keyframes glow{
+ 33%{border-color:var(--n2)}
+ 66%{border-color:var(--n3)}
+}
+/* GRID */
+.grid{
+ display:grid;
+ grid-template-columns:repeat(2,1fr);
+ gap:14px;
+ max-width:440px;
+ margin:auto;
+}
+@media (max-width:480px){
+ .grid{
+  grid-template-columns:1fr;
+ }
+}
+/* CARD */
+.card{
+ height:110px;
+ border-radius:18px;
+ border:1px solid cyan;
+ background:var(--box);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-weight:bold;
+ cursor:pointer;
+ transition:.3s;
+ font-size:15px;
+}
+.card:hover{
+ transform:translateY(-6px) scale(1.05);
+ box-shadow:0 0 22px cyan;
+}
+/* ADMIN */
+.avatar{
+ width:90px;
+ height:90px;
+ border-radius:50%;
+ background:linear-gradient(135deg,#00ffff,#00ff66);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:32px;
+ font-weight:bold;
+ color:#000;
+ box-shadow:0 0 30px cyan;
+ margin:auto;
+}
+.bubble{
+ display:inline-block;
+ margin:6px;
+ padding:8px 14px;
+ border-radius:999px;
+ border:1px solid cyan;
+ cursor:pointer;
+ animation:float 3s infinite;
+ font-size:13px;
+}
+@keyframes float{
+ 50%{transform:translateY(-6px)}
+}
+footer{
+ font-size:11px;
+ color:#777;
+ margin:20px 0;
+}
 
-/* ENVELOPE */
-.envelope{
-  position:relative;
-  width:220px;
-  height:140px;
-  cursor:pointer;
+/* CHAT BOT */
+.container{
+width:100%;
+max-width:480px;
+height:70vh;
+background:rgba(30,30,30,.96);
+display:flex;
+flex-direction:column;
+z-index:1;
+box-shadow:0 0 25px #00ffff44;
+font-family:'Orbitron',sans-serif;
+backdrop-filter:blur(8px);
+margin:auto;
+margin-top:12px;
 }
-
-/* base */
-.env-body{
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:#ffffff;
-  border-radius:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.12);
-  z-index:1;
+.container header{
+text-align:center;
+font-size:1.4em;
+padding:8px;
+color:#00ffff;
+border-bottom:1px solid #333;
+text-shadow:0 0 12px #00ffff;
 }
-
-/* flap */
-.env-flap{
-  position:absolute;
-  top:0; left:0;
-  width:0; height:0;
-  border-left:110px solid transparent;
-  border-right:110px solid transparent;
-  border-top:70px solid #fbcfe8;
-  transform-origin:top;
-  transition:transform .8s ease;
-  z-index:3;
+.chat{
+flex:1;
+overflow-y:auto;
+padding:12px;
+display:flex;
+flex-direction:column;
+gap:10px;
 }
-
-/* heart seal */
-.seal{
-  position:absolute;
-  width:26px;
-  height:26px;
-  background:#f43f5e;
-  top:58px; left:97px;
-  transform:rotate(-45deg);
-  z-index:4;
+.message{
+padding:12px 14px;
+border-radius:18px;
+animation:fadeIn .3s ease;
+font-size:.9em;
+white-space:pre-line;
 }
-.seal::before,.seal::after{
-  content:"";
-  position:absolute;
-  width:26px; height:26px;
-  background:inherit;
-  border-radius:50%;
+.message.user{
+background:linear-gradient(90deg,#00d4ff,#00ffff);
+color:#000;
+align-self:flex-end;
+border-bottom-right-radius:0;
 }
-.seal::before{ top:-13px; left:0; }
-.seal::after{ left:13px; top:0; }
-
-/* letter */
-.letter{
-  position:absolute;
-  width:190px;
-  height:110px;
-  background:#fff;
-  border-radius:12px;
-  top:20px; left:15px;
-  box-shadow:0 18px 36px rgba(0,0,0,.15);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:'Playfair Display', serif;
-  font-size:28px;
-  color:#e11d48;
-  transform:translateY(40px);
-  opacity:0;
-  transition:all .8s ease;
-  z-index:2;
+.message.bot{
+background:linear-gradient(90deg,#ff007f,#ff4081);
+align-self:flex-start;
+border-bottom-left-radius:0;
 }
-
-.open .env-flap{
-  transform:rotateX(180deg);
+.menu-item{
+margin:5px 0;
+padding:12px;
+background:#1c1c1c;
+border-radius:12px;
+cursor:pointer;
+transition:.3s;
+box-shadow:0 0 10px #00ffff33;
+font-size:.9em;
 }
-.open .letter{
-  transform:translateY(-60px);
-  opacity:1;
+.menu-item:hover{
+background:#262626;
+box-shadow:0 0 18px #00ffffcc;
+transform:scale(1.02);
 }
-
-/* floating hearts */
-.love{
-  position:absolute;
-  color:#fb7185;
-  pointer-events:none;
+.menu-item a{
+color:#00ffff;
+text-decoration:none;
+display:block;
+width:100%;
 }
-
-@keyframes loveUp{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(-140px) scale(1.3); }
+button#restart{
+padding:12px;
+background:#111;
+border:none;
+color:#00ffff;
+font-size:.9em;
+cursor:pointer;
+box-shadow:0 0 15px #00ffff44;
+transition:.3s;
 }
-@keyframes loveDown{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(140px) scale(1.1); }
+button#restart:hover{
+box-shadow:0 0 25px #00ffff;
 }
-
-.hint{ margin-top:22px; font-size:14px; color:#6b7280; }
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:translateY(0);}
+}
 </style>
 </head>
 <body>
+<canvas id="bg"></canvas>
 
-<div class="container">
-  <div class="envelope" id="env">
-    <div class="env-flap"></div>
-    <div class="env-body"></div>
-    <div class="seal"></div>
-    <div class="letter">Dede 🤍</div>
-  </div>
-  <div class="hint">tap amplopnya 💌</div>
+<div class="topbar">
+ <div>GFFI Community</div>
+ <div class="toggle" onclick="toggleTheme()">🌙</div>
 </div>
 
+<header><h1>GFFI</h1></header>
+
+<nav>
+ <div class="btn active" onclick="openPage('home',this)">BERANDA</div>
+ <div class="btn" onclick="openPage('chatbot',this)">CHAT BOT</div>
+ <div class="btn" onclick="openPage('game',this)">GAME</div>
+ <div class="btn" onclick="openPage('bantuan',this)">BANTUAN</div>
+</nav>
+
+<!-- HOME -->
+<div id="home" class="page show">
+<h2>GFFI COMMUNITY</h2>
+
+<div class="neon">
+<b>GRUP & SALURAN RESMI</b><br><br>
+<div class="btn" onclick="openLink('https://chat.whatsapp.com/KoyczMj50VXGWq8xj9SxtI')">Grup WhatsApp</div><br><br>
+<div class="btn" onclick="openLink('https://whatsapp.com/channel/0029VajNKZaFHWq7PubYNp3k')">Saluran WhatsApp</div><br><br>
+<div class="btn" onclick="openLink('https://facebook.com/groups/3111698825528494/')">Facebook Group</div>
+</div>
+
+<div class="neon">
+<b>ADMIN UTAMA</b><br><br>
+<div class="avatar">R</div><br>
+<div class="btn" onclick="chatWA('6285857797517','admin')">Chat Admin Utama</div>
+</div>
+
+<div class="neon">
+<b>ADMIN LAINNYA</b><br><br>
+<div class="bubble" onclick="chatWA('6281235724413','admin')">Asep</div>
+<div class="bubble" onclick="chatWA('6289518003341','admin')">Ermi</div>
+<div class="bubble" onclick="chatWA('6282180596663','admin')">Farhan</div>
+<div class="bubble" onclick="chatWA('6282291488841','admin')">Radit</div>
+<div class="bubble" onclick="chatWA('6285230685677','admin')">Nur</div>
+<div class="bubble" onclick="chatWA('6283119462052','admin')">Lia</div>
+<div class="bubble" onclick="chatWA('6282263006141','admin')">Ara</div>
+</div>
+</div>
+
+<!-- CHAT BOT -->
+<div id="chatbot" class="page">
+<div class="container">
+<header>GFFI Chat Bot</header>
+<div class="chat" id="chat"></div>
+<button id="restart">Restart Bot</button>
+</div>
+</div>
+
+<!-- GAME -->
+<div id="game" class="page">
+<h2>GAME GFFI</h2>
+<div class="grid">
+ <div class="card" onclick="openLink('https://snake-gffi.netlify.app')">🐍 Snake GFFI</div>
+ <div class="card" onclick="openLink('https://gffisos.netlify.app')">🆘GFFI SOS</div>
+ <div class="card" onclick="openLink('https://gffi-guess01.netlify.app')">❓ GFFI Guess</div>
+ <div class="card" onclick="openLink('https://dombadanserigala.netlify.app')">🐑🐺 Domba dan serigala</div>
+</div>
+</div>
+
+<!-- BANTUAN -->
+<div id="bantuan" class="page">
+<h2>BANTUAN</h2>
+<div class="neon">
+<div class="bubble" onclick="chatWA('6285857797517','cs')">💬 Customer Service</div>
+</div>
+</div>
+
+<footer>© WEB/APK DIDUKUNG OLEH FLYYXN</footer>
+
 <script>
-const env = document.getElementById('env');
-
-env.addEventListener('click', ()=>{
-  env.classList.toggle('open');
-  spawnLove(14);
-});
-
-function spawnLove(n){
-  const r = env.getBoundingClientRect();
-  for(let i=0;i<n;i++){
-    const h = document.createElement('div');
-    h.className = 'love';
-    h.textContent = '❤';
-    h.style.left = (r.left + r.width/2 + (Math.random()*60-30))+'px';
-    h.style.top  = (r.top + r.height/2)+'px';
-    h.style.fontSize = (12 + Math.random()*16)+'px';
-    const dur = 2 + Math.random()*2;
-    const up = Math.random() > .5;
-    h.style.animation = `${up?'loveUp':'loveDown'} ${dur}s ease-out forwards`;
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(), dur*1000);
-  }
+function openPage(id,el){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
+ document.getElementById(id).classList.add('show');
+ document.querySelectorAll('nav .btn').forEach(b=>b.classList.remove('active'));
+ el.classList.add('active');
 }
-</script>
 
+function openLink(url){window.open(url,'_blank');}
+
+function chatWA(no,tipe){
+ let pesan="";
+ if(no==="6285857797517") pesan="hallo admin Rafly";
+ if(tipe==="cs") pesan="hallo min saya mempunyai bug/keluhan di aplikasi yang saya buka.";
+ if(tipe==="admin" && no!=="6285857797517") pesan="";
+ window.open("https://wa.me/"+no+"?text="+encodeURIComponent(pesan),"_blank");
+}
+
+function toggleTheme(){
+ document.body.classList.toggle("light");
+ localStorage.setItem("theme",document.body.classList.contains("light"));
+}
+if(localStorage.getItem("theme")==="true") document.body.classList.add("light");
+
+/* GALAXY */
+const c=document.getElementById("bg"),x=c.getContext("2d");
+let w,h,stars=[];
+function resize(){w=c.width=innerWidth;h=c.height=innerHeight}
+addEventListener("resize",resize);resize();
+for(let i=0;i<140;i++)
+ stars.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*2+.6});
+(function draw(){
+ x.clearRect(0,0,w,h);
+ stars.forEach(s=>{
+  s.y+=0.3;if(s.y>h)s.y=0;
+  x.fillStyle="rgba(0,200,255,.8)";
+  x.beginPath();x.arc(s.x,s.y,s.r,0,7);x.fill();
+ });
+ requestAnimationFrame(draw);
+})();
+
+// ===== CHAT BOT =====
+const menuData={
+"!Menu":[
+{name:"Download"},
+{name:"Link Grup/Saluran"},
+{name:"Menu Game GFFI 🎮"},
+{name:"Kode Redeem FF 🎁"},
+{name:"Nomor Admin"},
+{name:"Peraturan Grup 📜"}
+],
+"Download":[
+{name:"Free Fire 🔥",link:"https://play.google.com/store/apps/details?id=com.dts.freefireth"},
+{name:"Free Fire Max ⚡",link:"https://play.google.com/store/apps/details?id=com.dts.freefiremax"}
+],
+"Link Grup/Saluran":[
+{name:"Grup GFFI 💬",link:"https://chat.whatsapp.com/KoyczMj50VXGWq8xj9SxtI?mode=gi_t"},
+{name:"Saluran GFFI 📢",link:"https://whatsapp.com/channel/0029VbCYC293WHTgXf6Mrg12"}
+],
+"Menu Game GFFI 🎮":[
+{name:"SnakeGFFI 🐍",link:"https://snake-gffi.netlify.app"},
+{name:"GFFI 🆘",link:"https://gffisos.netlify.app"},
+{name:"GFFI - GUESS 🎯",link:"https://gffi-guess01.netlify.app"},
+{name:"DOMBA 🐑 VS SERIGALA 🐺",link:"https://dombadanserigala.netlify.app"}
+],
+"Kode Redeem FF 🎁":[
+{name:"Website Redeem Garena 🎟️",link:"https://reward.ff.garena.com/id"}
+],
+"Peraturan Grup 📜":[
+{name:`╔══════════════════╗
+📜 𝐀𝐓𝐔𝐑𝐀𝐍 𝐆𝐑𝐔𝐏 𝐆𝐅𝐅𝐈
+╚══════════════════╝
+1️⃣ Dilarang spam, hoaks, atau flood.
+2️⃣ Dilarang toxic, menghina, atau berkata kasar.
+3️⃣ Dilarang kirim konten SARA.
+4️⃣ Dilarang share cheat / config ilegal.
+5️⃣ Dilarang melakukan penipuan dalam bentuk apa pun.
+6️⃣ Dilarang kirim konten 18+ atau sadis.
+7️⃣ Promosi wajib izin Admin Utama.
+8️⃣ Dilarang kirim link phishing / grup lain.
+9️⃣ Wajib menjaga kenyamanan grup.
+══════════════════
+⚠ 𝐒𝐀𝐍𝐊𝐒𝐈
+1x Pelanggaran = AUTO KICK
+Tanpa Peringatan
+══════════════════`}
+],
+"Nomor Admin":[
+{name:"Rafly",link:"https://wa.me/6285857797517"},
+{name:"Asep",link:"https://wa.me/6281235724413"},
+{name:"Ermi",link:"https://wa.me/6289518003341"},
+{name:"Farhan",link:"https://wa.me/6282180596663"},
+{name:"Radit",link:"https://wa.me/6282291488841"},
+{name:"Nur",link:"https://wa.me/6285230685677"},
+{name:"Lia",link:"https://wa.me/6283119462052"},
+{name:"Ara",link:"https://wa.me/6282263006141"}
+]
+};
+const chat=document.getElementById("chat");
+const restart=document.getElementById("restart");
+
+function addMessage(sender,content){
+const msg=document.createElement("div");
+msg.className="message "+sender;
+if(Array.isArray(content)){
+content.forEach(i=>{
+const div=document.createElement("div");
+div.className="menu-item";
+if(i.link){
+div.innerHTML=`<a href="${i.link}" target="_blank">${i.name}</a>`;
+}else{
+div.textContent=i.name;
+if(menuData[i.name]){
+div.onclick=()=>{
+addMessage("user",i.name);
+setTimeout(()=>handle(i.name),500);
+};
+}
+}
+msg.appendChild(div);
+});
+}else{
+msg.textContent=content;
+}
+chat.appendChild(msg);
+chat.scrollTop=chat.scrollHeight;
+}
+
+function handle(cmd){
+addMessage("bot",menuData[cmd]||"Menu tidak tersedia 😅");
+}
+
+restart.onclick=()=>{
+chat.innerHTML="";
+addMessage("bot","Halo! Selamat datang di GFFI Chat Bot 🤖");
+setTimeout(()=>addMessage("bot",menuData["!Menu"]),600);
+};
+
+addMessage("bot","Halo! Selamat datang di GFFI Chat Bot 🤖");
+setTimeout(()=>addMessage("bot",menuData["!Menu"]),600);
+</script>
 </body>
 </html>
