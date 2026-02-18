@@ -2,159 +2,272 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>For Dede 🤍</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>GFFI Ramadan & Idul Fitri</title>
 
 <style>
-body{
+html,body{
   margin:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, #fff5f7, #fdecef);
-  font-family:'Poppins', sans-serif;
-  overflow:hidden;
-}
-.container{ text-align:center; }
-
-/* ENVELOPE */
-.envelope{
-  position:relative;
-  width:220px;
-  height:140px;
-  cursor:pointer;
-}
-
-/* base */
-.env-body{
-  position:absolute;
   width:100%;
   height:100%;
-  background:#ffffff;
-  border-radius:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.12);
-  z-index:1;
-}
-
-/* flap */
-.env-flap{
-  position:absolute;
-  top:0; left:0;
-  width:0; height:0;
-  border-left:110px solid transparent;
-  border-right:110px solid transparent;
-  border-top:70px solid #fbcfe8;
-  transform-origin:top;
-  transition:transform .8s ease;
-  z-index:3;
-}
-
-/* heart seal */
-.seal{
-  position:absolute;
-  width:26px;
-  height:26px;
-  background:#f43f5e;
-  top:58px; left:97px;
-  transform:rotate(-45deg);
-  z-index:4;
-}
-.seal::before,.seal::after{
-  content:"";
-  position:absolute;
-  width:26px; height:26px;
-  background:inherit;
-  border-radius:50%;
-}
-.seal::before{ top:-13px; left:0; }
-.seal::after{ left:13px; top:0; }
-
-/* letter */
-.letter{
-  position:absolute;
-  width:190px;
-  height:110px;
-  background:#fff;
-  border-radius:12px;
-  top:20px; left:15px;
-  box-shadow:0 18px 36px rgba(0,0,0,.15);
+  background:#000;
   display:flex;
-  align-items:center;
   justify-content:center;
-  font-family:'Playfair Display', serif;
-  font-size:28px;
-  color:#e11d48;
-  transform:translateY(40px);
-  opacity:0;
-  transition:all .8s ease;
-  z-index:2;
+  align-items:center;
+  font-family:Arial,sans-serif;
 }
-
-.open .env-flap{
-  transform:rotateX(180deg);
+#phone{
+  width:100%;
+  max-width:430px;
+  aspect-ratio:9/16;
+  position:relative;
+  overflow:hidden;
+  background:black;
 }
-.open .letter{
-  transform:translateY(-60px);
-  opacity:1;
-}
-
-/* floating hearts */
-.love{
+canvas{position:absolute;inset:0}
+#loader{
   position:absolute;
-  color:#fb7185;
+  bottom:64px;
+  width:100%;
+  text-align:center;
+  z-index:10;
+}
+#status{
+  font-size:clamp(14px,4vw,22px);
+  letter-spacing:4px;
+  margin-bottom:14px;
+}
+#barBox{
+  width:78%;
+  max-width:360px;
+  height:14px;
+  margin:auto;
+  overflow:hidden;
+  border-radius:10px;
+}
+#bar{height:100%;width:0%;border-radius:10px}
+#flash{
+  position:absolute;
+  inset:0;
+  background:#fff;
+  opacity:0;
   pointer-events:none;
+  z-index:99;
 }
-
-@keyframes loveUp{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(-140px) scale(1.3); }
-}
-@keyframes loveDown{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(140px) scale(1.1); }
-}
-
-.hint{ margin-top:22px; font-size:14px; color:#6b7280; }
 </style>
 </head>
+
 <body>
 
-<div class="container">
-  <div class="envelope" id="env">
-    <div class="env-flap"></div>
-    <div class="env-body"></div>
-    <div class="seal"></div>
-    <div class="letter">Dede 🤍</div>
+<script>
+if(sessionStorage.getItem("gffi_loaded")){
+  location.replace("https://berandaramadhangffi.netlify.app/");
+}
+</script>
+
+<div id="phone">
+  <canvas id="c"></canvas>
+  <div id="loader">
+    <div id="status">MEMUAT</div>
+    <div id="barBox"><div id="bar"></div></div>
   </div>
-  <div class="hint">tap amplopnya 💌</div>
+  <div id="flash"></div>
 </div>
 
 <script>
-const env = document.getElementById('env');
+const phone=document.getElementById("phone");
+const c=document.getElementById("c");
+const ctx=c.getContext("2d");
 
-env.addEventListener('click', ()=>{
-  env.classList.toggle('open');
-  spawnLove(14);
+function resize(){
+  c.width=phone.clientWidth;
+  c.height=phone.clientHeight;
+}
+resize(); addEventListener("resize",resize);
+
+const SCALE=Math.min(c.width,c.height)/800;
+
+/* ===== MODE ===== */
+const now=new Date();
+const idulFitri=new Date("2025-03-31");
+const diff=(now-idulFitri)/(1000*60*60*24);
+const MODE = diff>=0 && diff<=3 ? "FITRI" : "RAMADAN";
+
+/* ===== THEME ===== */
+let theme,texts;
+if(MODE==="FITRI"){
+  theme={bg1:"#0b3a5e",bg2:"#031826",glow:"#ffd700",accent:"#fff5c2",stars:200};
+  texts=["IDUL FITRI","1446 H","MOHON MAAF","LAHIR & BATIN","GFFI"];
+  status.innerText="SELAMAT IDUL FITRI";
+}else{
+  theme={bg1:"#073c2a",bg2:"#010b08",glow:"#00ff99",accent:"#eaffd6",stars:260};
+  texts=["RAMADAN","1446 H","SELAMAT BERPUASA","GFFI"];
+  status.innerText="MENYAMBUT RAMADAN";
+}
+
+phone.style.background=`radial-gradient(circle at top,${theme.bg1},${theme.bg2})`;
+loader.style.color=theme.accent;
+loader.style.textShadow=`0 0 14px ${theme.glow}`;
+barBox.style.border=`1px solid ${theme.glow}`;
+bar.style.background=`linear-gradient(90deg,${theme.glow},#ffd700,${theme.glow})`;
+
+/* ===== STARS ===== */
+const stars=[];
+for(let i=0;i<theme.stars;i++){
+  stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.6+.5,a:Math.random()*6});
+}
+
+/* ===== CRESCENT MOON ===== */
+const moon={
+  x:c.width*0.72,
+  y:c.height*0.22,
+  r:46*SCALE,
+  a:0
+};
+
+/* ===== GLOW PARTICLES AROUND MOON ===== */
+const moonParticles=[];
+for(let i=0;i<42;i++){
+  moonParticles.push({
+    a:Math.random()*Math.PI*2,
+    d:Math.random()*28+moon.r+6,
+    s:Math.random()*.004+.002
+  });
+}
+
+/* ===== LAMP ===== */
+const lamps=[];
+for(let i=0;i<6;i++){
+  lamps.push({x:c.width*(i+1)/7,y:80+Math.random()*40,a:Math.random()*6});
+}
+
+/* ===== TEXT PARTICLES ===== */
+let textParticles=[],ti=0;
+function makeText(t){
+  const o=document.createElement("canvas").getContext("2d");
+  o.canvas.width=c.width;
+  o.canvas.height=c.height;
+
+  let fs=92*SCALE;
+  if(t.length>14) fs=64*SCALE;
+  if(t.length>20) fs=52*SCALE;
+
+  o.font=`bold ${fs}px Arial`;
+  o.textAlign="center";
+  o.textBaseline="middle";
+  o.fillStyle=theme.accent;
+
+  const mw=c.width*0.82;
+  const w=t.split(" ");
+  let l=[],line="";
+  for(let x of w){
+    let test=line+x+" ";
+    if(o.measureText(test).width>mw){l.push(line);line=x+" ";}else line=test;
+  }
+  l.push(line);
+
+  const sy=c.height/2-(l.length-1)*fs*.6;
+  l.forEach((v,i)=>o.fillText(v.trim(),c.width/2,sy+i*fs*1.2));
+
+  const d=o.getImageData(0,0,c.width,c.height).data;
+  textParticles=[];
+  for(let y=0;y<c.height;y+=4)
+    for(let x=0;x<c.width;x+=4)
+      if(d[(y*c.width+x)*4]>200)
+        textParticles.push({x:Math.random()*c.width,y:Math.random()*c.height,tx:x,ty:y,vx:(Math.random()-.5)*6,vy:(Math.random()-.5)*6,p:"fly"});
+}
+
+/* ===== MOSQUE ===== */
+function drawMosque(){
+  ctx.fillStyle="rgba(0,0,0,.7)";
+  const h=c.height;
+  ctx.beginPath();
+  ctx.moveTo(0,h);
+  ctx.lineTo(0,h-90);
+  for(let i=0;i<7;i++){
+    ctx.quadraticCurveTo(c.width*(i*2+1)/14,h-150-(i%2)*30,c.width*(i+1)/7,h-90);
+  }
+  ctx.lineTo(c.width,h);
+  ctx.closePath();
+  ctx.fill();
+}
+
+/* ===== DRAW ===== */
+function draw(){
+  ctx.fillStyle="rgba(0,0,0,.35)";
+  ctx.fillRect(0,0,c.width,c.height);
+
+  stars.forEach(s=>{
+    s.a+=.01;
+    ctx.fillStyle=`rgba(255,255,200,${.4+Math.sin(s.a)*.6})`;
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6);ctx.fill();
+  });
+
+  /* MOON */
+  moon.a+=.002;
+  ctx.save();
+  ctx.translate(moon.x,moon.y);
+  ctx.rotate(Math.sin(moon.a)*.05);
+  ctx.fillStyle=theme.glow;
+  ctx.beginPath();ctx.arc(0,0,moon.r,0,6);ctx.fill();
+  ctx.globalCompositeOperation="destination-out";
+  ctx.beginPath();ctx.arc(moon.r*.45,0,moon.r,0,6);ctx.fill();
+  ctx.restore();
+  ctx.globalCompositeOperation="source-over";
+
+  /* MOON GLOW PARTICLES */
+  moonParticles.forEach(p=>{
+    p.a+=p.s;
+    const x=moon.x+Math.cos(p.a)*p.d;
+    const y=moon.y+Math.sin(p.a)*p.d;
+    ctx.fillStyle=theme.glow;
+    ctx.globalAlpha=.6;
+    ctx.beginPath();ctx.arc(x,y,2.2*SCALE,0,6);ctx.fill();
+  });
+  ctx.globalAlpha=1;
+
+  if(MODE==="RAMADAN"){
+    lamps.forEach(l=>{
+      l.a+=.02;
+      ctx.strokeStyle=theme.accent;
+      ctx.beginPath();ctx.moveTo(l.x,0);ctx.lineTo(l.x+Math.sin(l.a)*6,l.y);ctx.stroke();
+      ctx.fillStyle=theme.glow;
+      ctx.beginPath();ctx.arc(l.x+Math.sin(l.a)*6,l.y+10,6,0,6);ctx.fill();
+    });
+  }
+
+  textParticles.forEach(p=>{
+    if(p.p==="fly"){p.x+=p.vx;p.y+=p.vy;p.vx*=.92;p.vy*=.92;if(Math.abs(p.vx)+Math.abs(p.vy)<.3)p.p="lock";}
+    if(p.p==="lock"){p.x+=(p.tx-p.x)*.1;p.y+=(p.ty-p.y)*.1;}
+    ctx.fillStyle=theme.accent;
+    ctx.beginPath();ctx.arc(p.x,p.y,2.6*SCALE,0,6);ctx.fill();
+  });
+
+  drawMosque();
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* ===== LOADING ===== */
+const D=14000,start=performance.now();
+function load(t){bar.style.width=Math.min(100,(t-start)/D*100)+"%";requestAnimationFrame(load);}
+requestAnimationFrame(load);
+
+/* ===== TEXT ===== */
+texts.forEach((_,i)=>{
+  setTimeout(()=>{textParticles.forEach(p=>p.p="fly");setTimeout(()=>makeText(texts[ti++%texts.length]),600);},1200+i*2600);
 });
 
-function spawnLove(n){
-  const r = env.getBoundingClientRect();
-  for(let i=0;i<n;i++){
-    const h = document.createElement('div');
-    h.className = 'love';
-    h.textContent = '❤';
-    h.style.left = (r.left + r.width/2 + (Math.random()*60-30))+'px';
-    h.style.top  = (r.top + r.height/2)+'px';
-    h.style.fontSize = (12 + Math.random()*16)+'px';
-    const dur = 2 + Math.random()*2;
-    const up = Math.random() > .5;
-    h.style.animation = `${up?'loveUp':'loveDown'} ${dur}s ease-out forwards`;
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(), dur*1000);
-  }
-}
+/* ===== REDIRECT ===== */
+setTimeout(()=>{
+  status.innerText="MASUK";
+  flash.style.transition="opacity .25s";
+  flash.style.opacity=1;
+  setTimeout(()=>{
+    sessionStorage.setItem("gffi_loaded","true");
+    location.replace("https://berandaramadhangffi.netlify.app/");
+  },300);
+},D+300);
 </script>
 
 </body>
