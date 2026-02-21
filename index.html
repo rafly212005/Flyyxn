@@ -2,160 +2,690 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>For Dede 🤍</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-
+<title>GFFI Community</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 <style>
+:root{
+  --bg:#04090f;
+  --text:#fffbe6;
+  --box:rgba(8,18,30,.88);
+  --n1:#f5c842;
+  --n2:#2affc7;
+  --n3:#93d5ff;
+  --n4:#ff6b6b;
+}
+.light{
+  --bg:#f0ede5;
+  --text:#1a1005;
+  --box:rgba(255,248,230,.92);
+}
+*{box-sizing:border-box;margin:0;padding:0}
 body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, #fff5f7, #fdecef);
-  font-family:'Poppins', sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Tajawal',Arial,sans-serif;
+  text-align:center;
+  overflow-x:hidden;
+  transition:.4s;
+  min-height:100vh;
+}
+canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* TOP */
+.topbar{
+  position:relative;z-index:2;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 16px;font-size:13px;
+  background:rgba(0,0,0,.3);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid rgba(245,200,66,.2);
+}
+.topbar-brand{
+  font-family:'Cinzel',serif;
+  color:var(--n1);
+  font-size:13px;
+  letter-spacing:2px;
+}
+.toggle{cursor:pointer;font-size:20px;transition:.3s}
+.toggle:hover{transform:rotate(20deg)}
+
+/* HEADER */
+header{
+  position:relative;z-index:1;
+  padding:24px 12px 10px;
+}
+header::before{
+  content:"☪✨";
+  position:absolute;
+  top:6px;left:50%;
+  transform:translateX(-50%);
+  font-size:20px;
+  animation:twinkle 3s infinite;
+}
+@keyframes twinkle{
+  0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}
+  50%{opacity:1;transform:translateX(-50%) scale(1.15)}
+}
+h1{
+  font-family:'Cinzel',serif;
+  font-size:38px;
+  letter-spacing:6px;
+  color:var(--n1);
+  text-shadow:0 0 24px var(--n1),0 0 60px rgba(245,200,66,.4);
+  animation:pulse 4s infinite;
+}
+@keyframes pulse{
+  50%{text-shadow:0 0 36px var(--n2),0 0 80px rgba(42,255,199,.3)}
+}
+.subtitle{
+  font-size:12px;letter-spacing:3px;
+  color:var(--n2);
+  margin-top:4px;
+  opacity:.8;
+}
+
+/* RAMADAN BANNER */
+.ramadan-banner{
+  position:relative;z-index:1;
+  background:linear-gradient(135deg,rgba(245,200,66,.15),rgba(42,255,199,.1));
+  border-top:1px solid rgba(245,200,66,.3);
+  border-bottom:1px solid rgba(245,200,66,.3);
+  padding:8px;
+  font-size:13px;
+  color:var(--n1);
+  letter-spacing:1px;
   overflow:hidden;
 }
-.container{ text-align:center; }
-
-/* ENVELOPE */
-.envelope{
-  position:relative;
-  width:220px;
-  height:140px;
-  cursor:pointer;
+.ramadan-scroll{
+  display:inline-block;
+  animation:marquee 20s linear infinite;
+  white-space:nowrap;
+}
+@keyframes marquee{
+  from{transform:translateX(100vw)}
+  to{transform:translateX(-100%)}
 }
 
-/* base */
-.env-body{
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:#ffffff;
-  border-radius:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.12);
-  z-index:1;
-}
-
-/* flap */
-.env-flap{
-  position:absolute;
-  top:0; left:0;
-  width:0; height:0;
-  border-left:110px solid transparent;
-  border-right:110px solid transparent;
-  border-top:70px solid #fbcfe8;
-  transform-origin:top;
-  transition:transform .8s ease;
-  z-index:3;
-}
-
-/* heart seal */
-.seal{
-  position:absolute;
-  width:26px;
-  height:26px;
-  background:#f43f5e;
-  top:58px; left:97px;
-  transform:rotate(-45deg);
-  z-index:4;
-}
-.seal::before,.seal::after{
-  content:"";
-  position:absolute;
-  width:26px; height:26px;
-  background:inherit;
-  border-radius:50%;
-}
-.seal::before{ top:-13px; left:0; }
-.seal::after{ left:13px; top:0; }
-
-/* letter */
-.letter{
-  position:absolute;
-  width:190px;
-  height:110px;
-  background:#fff;
-  border-radius:12px;
-  top:20px; left:15px;
-  box-shadow:0 18px 36px rgba(0,0,0,.15);
-  display:flex;
-  align-items:center;
+/* NAV */
+nav{
+  position:relative;z-index:2;
+  display:flex;flex-wrap:wrap;gap:6px;
   justify-content:center;
-  font-family:'Playfair Display', serif;
-  font-size:28px;
-  color:#e11d48;
-  transform:translateY(40px);
-  opacity:0;
-  transition:all .8s ease;
-  z-index:2;
+  padding:10px 10px 8px;
+  background:rgba(0,0,0,.2);
+  backdrop-filter:blur(4px);
+}
+.btn{
+  padding:8px 16px;
+  border-radius:30px;
+  background:linear-gradient(135deg,rgba(42,255,199,.15),rgba(147,213,255,.1));
+  color:var(--text);
+  font-weight:bold;
+  cursor:pointer;
+  transition:.3s;
+  font-size:13px;
+  border:1px solid rgba(42,255,199,.35);
+  letter-spacing:.5px;
+}
+.btn:hover,.btn.active{
+  background:linear-gradient(135deg,var(--n2),var(--n3));
+  color:#000;
+  box-shadow:0 0 18px rgba(42,255,199,.6);
+  transform:scale(1.05);
+  border-color:transparent;
 }
 
-.open .env-flap{
-  transform:rotateX(180deg);
-}
-.open .letter{
-  transform:translateY(-60px);
-  opacity:1;
+/* PAGE */
+.page{display:none;opacity:0;transform:translateY(16px);transition:.4s;position:relative;z-index:1;padding:0 12px 20px}
+.page.show{display:block;opacity:1;transform:none}
+h2{
+  color:var(--n2);font-size:17px;
+  letter-spacing:2px;
+  margin:16px 0 10px;
+  font-family:'Cinzel',serif;
 }
 
-/* floating hearts */
-.love{
+/* NEON BOX */
+.neon{
+  width:100%;max-width:520px;
+  margin:12px auto;padding:18px;
+  border-radius:20px;
+  background:var(--box);
+  border:1.5px solid rgba(245,200,66,.5);
+  backdrop-filter:blur(10px);
+  animation:glowbox 6s infinite;
+}
+@keyframes glowbox{
+  0%,100%{border-color:rgba(245,200,66,.5)}
+  50%{border-color:rgba(42,255,199,.5)}
+}
+.neon b{
+  font-family:'Cinzel',serif;
+  letter-spacing:1px;
+  color:var(--n1);
+  font-size:14px;
+}
+
+/* ADMIN ROW - Rafly & Farhan side by side */
+.admin-row{
+  display:flex;
+  gap:16px;
+  justify-content:center;
+  margin:10px 0;
+  flex-wrap:wrap;
+}
+.admin-card{
+  flex:1;min-width:130px;max-width:200px;
+  background:rgba(245,200,66,.07);
+  border:1px solid rgba(245,200,66,.3);
+  border-radius:16px;
+  padding:14px 10px;
+  display:flex;flex-direction:column;
+  align-items:center;gap:8px;
+}
+.avatar{
+  width:72px;height:72px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cinzel',serif;font-size:26px;font-weight:bold;color:#000;
+  box-shadow:0 0 28px var(--n1);
+}
+.avatar.main{background:linear-gradient(135deg,var(--n1),#ffb347)}
+.avatar.vice{background:linear-gradient(135deg,var(--n2),var(--n3))}
+.admin-label{font-size:11px;color:var(--n1);letter-spacing:1px;font-weight:bold}
+.admin-name{font-size:15px;font-weight:bold}
+
+/* OTHER ADMINS */
+.bubble{
+  display:inline-block;
+  margin:5px;padding:8px 14px;
+  border-radius:999px;
+  border:1px solid var(--n2);
+  cursor:pointer;
+  animation:float 3s infinite;
+  font-size:13px;
+  transition:.3s;
+  background:rgba(42,255,199,.05);
+}
+.bubble:hover{background:rgba(42,255,199,.2);transform:scale(1.08)}
+@keyframes float{50%{transform:translateY(-5px)}}
+
+/* LINK BUTTONS */
+.link-btn{
+  display:inline-block;
+  margin:6px 4px;
+  padding:10px 18px;
+  border-radius:30px;
+  background:linear-gradient(135deg,var(--n2),var(--n3));
+  color:#000;font-weight:bold;font-size:14px;
+  cursor:pointer;transition:.3s;border:none;
+}
+.link-btn:hover{transform:scale(1.06);box-shadow:0 0 20px rgba(42,255,199,.5)}
+
+/* GAME GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  max-width:440px;
+  margin:12px auto;
+}
+@media(max-width:480px){.grid{grid-template-columns:1fr}}
+.card{
+  height:110px;border-radius:18px;
+  border:1px solid rgba(42,255,199,.4);
+  background:var(--box);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;cursor:pointer;transition:.3s;
+  font-size:15px;
+  flex-direction:column;gap:4px;
+}
+.card:hover{
+  transform:translateY(-6px) scale(1.05);
+  box-shadow:0 0 22px rgba(42,255,199,.5);
+  border-color:var(--n2);
+}
+.card-icon{font-size:28px}
+
+/* CHATBOT */
+.chat-wrap{
+  max-width:480px;height:70vh;margin:12px auto;
+  background:rgba(4,14,26,.97);
+  display:flex;flex-direction:column;
+  border-radius:20px;
+  overflow:hidden;
+  border:1.5px solid rgba(245,200,66,.35);
+  box-shadow:0 0 30px rgba(42,255,199,.2);
+  backdrop-filter:blur(10px);
+}
+.chat-header{
+  padding:10px 14px;
+  background:rgba(0,0,0,.4);
+  border-bottom:1px solid rgba(245,200,66,.3);
+  font-family:'Cinzel',serif;
+  color:var(--n1);
+  font-size:14px;
+  letter-spacing:2px;
+  text-shadow:0 0 12px var(--n1);
+}
+.chat{
+  flex:1;overflow-y:auto;
+  padding:12px;display:flex;
+  flex-direction:column;gap:10px;
+}
+.chat::-webkit-scrollbar{width:4px}
+.chat::-webkit-scrollbar-track{background:transparent}
+.chat::-webkit-scrollbar-thumb{background:rgba(42,255,199,.3);border-radius:4px}
+.message{
+  padding:12px 14px;border-radius:18px;
+  animation:fadeIn .3s ease;font-size:.9em;
+  white-space:pre-line;
+  color:#fff;
+  max-width:85%;
+}
+.message.user{
+  background:linear-gradient(90deg,var(--n2),var(--n3));
+  color:#000;align-self:flex-end;
+}
+.message.bot{
+  background:linear-gradient(135deg,rgba(245,200,66,.25),rgba(245,200,66,.1));
+  border:1px solid rgba(245,200,66,.3);
+  color:#fff;align-self:flex-start;
+}
+.menu-item{
+  margin:5px 0;padding:11px 14px;
+  background:rgba(42,255,199,.08);
+  border:1px solid rgba(42,255,199,.25);
+  border-radius:12px;
+  cursor:pointer;transition:.3s;
+  color:#fff;text-align:left;
+}
+.menu-item:hover{background:rgba(42,255,199,.18);border-color:var(--n2)}
+.menu-item a{color:var(--n2);text-decoration:none;font-weight:bold}
+.menu-item a:hover{text-decoration:underline}
+button#restart{
+  padding:10px;background:rgba(0,0,0,.4);
+  border:none;border-top:1px solid rgba(245,200,66,.2);
+  color:var(--n2);cursor:pointer;font-size:13px;
+  letter-spacing:1px;transition:.3s;
+}
+button#restart:hover{background:rgba(42,255,199,.1)}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:none}
+}
+
+/* BANTUAN */
+.cs-card{
+  max-width:360px;margin:20px auto;
+  padding:30px 20px;
+  border-radius:20px;
+  background:var(--box);
+  border:1.5px solid rgba(245,200,66,.5);
+}
+.cs-icon{font-size:48px;margin-bottom:12px}
+.cs-title{font-family:'Cinzel',serif;color:var(--n1);font-size:16px;margin-bottom:8px;letter-spacing:1px}
+.cs-desc{font-size:13px;color:rgba(255,255,255,.65);margin-bottom:16px}
+
+/* SEPARATOR */
+.sep{
+  width:60%;max-width:200px;
+  height:1px;background:linear-gradient(90deg,transparent,var(--n1),transparent);
+  margin:12px auto;
+}
+
+footer{
+  position:relative;z-index:1;
+  font-size:11px;color:rgba(255,255,255,.35);
+  padding:16px 0 20px;
+  letter-spacing:1px;
+}
+footer span{color:var(--n1);opacity:.6}
+
+/* ORNAMENT DECORATIONS */
+.crescent{
+  font-size:60px;
+  opacity:.07;
   position:absolute;
-  color:#fb7185;
   pointer-events:none;
+  animation:slowspin 20s linear infinite;
 }
-
-@keyframes loveUp{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(-140px) scale(1.3); }
-}
-@keyframes loveDown{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(140px) scale(1.1); }
-}
-
-.hint{ margin-top:22px; font-size:14px; color:#6b7280; }
+@keyframes slowspin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
+<canvas id="bg"></canvas>
 
-<div class="container">
-  <div class="envelope" id="env">
-    <div class="env-flap"></div>
-    <div class="env-body"></div>
-    <div class="seal"></div>
-    <div class="letter">Dede 🤍</div>
-  </div>
-  <div class="hint">tap amplopnya 💌</div>
+<div class="topbar">
+  <div class="topbar-brand">☪ GFFI COMMUNITY</div>
+  <div class="toggle" onclick="toggleTheme()" title="Toggle tema">🌙</div>
 </div>
 
+<!-- RAMADAN SCROLLING BANNER -->
+<div class="ramadan-banner">
+  <span class="ramadan-scroll">🌙 Marhaban Ya Ramadhan 1446 H — Selamat Menunaikan Ibadah Puasa — Semoga Amal Ibadah Kita Diterima Allah SWT 🌙 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+</div>
+
+<header>
+  <div style="margin-top:12px"></div>
+  <h1>GFFI</h1>
+  <div class="subtitle">GARUDA FREE FIRE INDONESIA</div>
+</header>
+
+<nav>
+  <div class="btn active" onclick="openPage('home',this)">🏠 Beranda</div>
+  <div class="btn" onclick="openPage('chatbot',this)">🤖 Chat Bot</div>
+  <div class="btn" onclick="openPage('bantuan',this)">🆘 CS</div>
+  <div class="btn" onclick="openPage('game',this)">🎮 Game</div>
+</nav>
+
+<!-- HOME -->
+<div id="home" class="page show">
+  <h2>GFFI COMMUNITY</h2>
+
+  <!-- OFFICIAL LINKS -->
+  <div class="neon">
+    <b>⚡ GRUP &amp; SALURAN RESMI</b>
+    <div class="sep"></div>
+    <div class="link-btn" onclick="openLink('https://chat.whatsapp.com/KoyczMj50VXGWq8xj9SxtI')">💬 Grup WhatsApp</div>
+    <div class="link-btn" onclick="openLink('https://whatsapp.com/channel/0029VajNKZaFHWq7PubYNp3k')">📢 Saluran WhatsApp</div>
+    <div class="link-btn" onclick="openLink('https://facebook.com/groups/3111698825528494/')">👥 Facebook Group</div>
+  </div>
+
+  <!-- RAFLY + FARHAN SIDE BY SIDE -->
+  <div class="neon">
+    <b>👑 PENGURUS UTAMA</b>
+    <div class="sep"></div>
+    <div class="admin-row">
+      <div class="admin-card">
+        <div class="avatar main">R</div>
+        <div class="admin-label">⭐ ADMIN UTAMA</div>
+        <div class="admin-name">Rafly</div>
+        <div class="btn" style="padding:7px 14px;font-size:12px;margin-top:4px" onclick="chatWA('6285857797517','admin')">Chat</div>
+      </div>
+      <div class="admin-card">
+        <div class="avatar vice">F</div>
+        <div class="admin-label">🥈 WAKIL ADMIN</div>
+        <div class="admin-name">Farhan</div>
+        <div class="btn" style="padding:7px 14px;font-size:12px;margin-top:4px" onclick="chatWA('6282180596663','wakil')">Chat</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OTHER ADMINS -->
+  <div class="neon">
+    <b>🛡️ ADMIN LAINNYA</b>
+    <div class="sep"></div>
+    <div class="bubble" onclick="chatWA('6281235724413','admin')">Asep</div>
+    <div class="bubble" onclick="chatWA('6289518003341','admin')">Ermi</div>
+    <div class="bubble" onclick="chatWA('6282291488841','admin')">Radit</div>
+    <div class="bubble" onclick="chatWA('6285230685677','admin')">Nur</div>
+    <div class="bubble" onclick="chatWA('6283119462052','admin')">Lia</div>
+    <div class="bubble" onclick="chatWA('62887435011029','admin')">Halim</div>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<div id="chatbot" class="page">
+  <div class="chat-wrap">
+    <div class="chat-header">🤖 GFFI Chat Bot</div>
+    <div class="chat" id="chat"></div>
+    <button id="restart">🔄 Restart Bot</button>
+  </div>
+</div>
+
+<!-- CS -->
+<div id="bantuan" class="page">
+  <h2>CUSTOMER SERVICE</h2>
+  <div class="cs-card">
+    <div class="cs-icon">💬</div>
+    <div class="cs-title">Butuh Bantuan?</div>
+    <div class="cs-desc">Tim CS kami siap membantu Anda 24 jam sehari selama bulan Ramadhan</div>
+    <div class="link-btn" onclick="chatWA('6285857797517','cs')">Hubungi Customer Service</div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game" class="page">
+  <h2>🎮 GAME GFFI</h2>
+  <div class="grid">
+    <div class="card" onclick="openLink('https://snake-gffi.netlify.app')">
+      <div class="card-icon">🐍</div>
+      <div>Snake GFFI</div>
+    </div>
+    <div class="card" onclick="openLink('https://gffisos.netlify.app')">
+      <div class="card-icon">🆘</div>
+      <div>GFFI SOS</div>
+    </div>
+    <div class="card" onclick="openLink('https://gffi-guess01.netlify.app')">
+      <div class="card-icon">❓</div>
+      <div>GFFI Guess</div>
+    </div>
+    <div class="card" onclick="openLink('https://dombadanserigala.netlify.app')">
+      <div class="card-icon">🐑🐺</div>
+      <div>Domba &amp; Serigala</div>
+    </div>
+  </div>
+</div>
+
+<footer>© WEB/APK DIDUKUNG OLEH <span>FLYYXN</span> &nbsp;|&nbsp; GFFI Community 2025</footer>
+
 <script>
-const env = document.getElementById('env');
-
-env.addEventListener('click', ()=>{
-  env.classList.toggle('open');
-  spawnLove(14);
-});
-
-function spawnLove(n){
-  const r = env.getBoundingClientRect();
-  for(let i=0;i<n;i++){
-    const h = document.createElement('div');
-    h.className = 'love';
-    h.textContent = '❤';
-    h.style.left = (r.left + r.width/2 + (Math.random()*60-30))+'px';
-    h.style.top  = (r.top + r.height/2)+'px';
-    h.style.fontSize = (12 + Math.random()*16)+'px';
-    const dur = 2 + Math.random()*2;
-    const up = Math.random() > .5;
-    h.style.animation = `${up?'loveUp':'loveDown'} ${dur}s ease-out forwards`;
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(), dur*1000);
-  }
+/* NAV */
+function openPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+  document.querySelectorAll('nav .btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
 }
-</script>
+function openLink(url){window.open(url,'_blank')}
+function chatWA(no,tipe){
+  let pesan="Halo GFFI Community";
+  if(no==="6285857797517"&&tipe==="admin") pesan="Halo admin Rafly";
+  if(no==="6282180596663"&&tipe==="wakil") pesan="Halo wakil admin Farhan";
+  if(tipe==="cs") pesan="Halo min, saya mempunyai pertanyaan/keluhan yang ingin saya sampaikan.";
+  window.open("https://wa.me/"+no+"?text="+encodeURIComponent(pesan),"_blank");
+}
+function toggleTheme(){
+  document.body.classList.toggle("light");
+  localStorage.setItem("theme",document.body.classList.contains("light"));
+  document.querySelector('.toggle').textContent=document.body.classList.contains("light")?"☀️":"🌙";
+}
+if(localStorage.getItem("theme")==="true"){
+  document.body.classList.add("light");
+  document.querySelector('.toggle').textContent="☀️";
+}
 
-</body>
-</html>
+/* ========================
+   PARTICLE SYSTEM
+   Bintang kelap-kelip + partikel emas Ramadhan
+======================== */
+const canvas=document.getElementById("bg");
+const ctx=canvas.getContext("2d");
+let W,H;
+
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+window.addEventListener("resize",resize);resize();
+
+// Stars
+const stars=[];
+for(let i=0;i<160;i++){
+  stars.push({
+    x:Math.random()*W,
+    y:Math.random()*H,
+    r:Math.random()*1.8+0.4,
+    alpha:Math.random(),
+    speed:Math.random()*0.4+0.1,
+    twinkleSpeed:Math.random()*0.02+0.005,
+    twinkleDir:Math.random()>0.5?1:-1
+  });
+}
+
+// Gold sparkles (Ramadan particles)
+const sparkles=[];
+for(let i=0;i<40;i++){
+  sparkles.push({
+    x:Math.random()*W,
+    y:Math.random()*H,
+    r:Math.random()*2.5+1,
+    alpha:Math.random()*0.7+0.1,
+    vy:-(Math.random()*0.5+0.1),
+    vx:(Math.random()-0.5)*0.3,
+    life:Math.random()*100,
+    maxLife:100+Math.random()*100
+  });
+}
+
+// Crescent moon particles
+const moons=[];
+for(let i=0;i<8;i++){
+  moons.push({
+    x:Math.random()*W,
+    y:Math.random()*H,
+    size:Math.random()*12+8,
+    alpha:Math.random()*0.06+0.02,
+    vy:-(Math.random()*0.15+0.05)
+  });
+}
+
+function drawStar(ctx,x,y,r,alpha){
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  ctx.fillStyle="#fffbe6";
+  ctx.shadowBlur=r*4;
+  ctx.shadowColor="rgba(245,200,66,0.8)";
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCross(ctx,x,y,r,alpha){
+  ctx.save();
+  ctx.globalAlpha=alpha*0.6;
+  ctx.strokeStyle="#fffbe6";
+  ctx.lineWidth=0.5;
+  ctx.beginPath();
+  ctx.moveTo(x-r*3,y);ctx.lineTo(x+r*3,y);
+  ctx.moveTo(x,y-r*3);ctx.lineTo(x,y+r*3);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  // Draw stars with twinkle
+  stars.forEach(s=>{
+    s.y+=s.speed*0.25;
+    if(s.y>H){s.y=0;s.x=Math.random()*W}
+    s.alpha+=s.twinkleDir*s.twinkleSpeed;
+    if(s.alpha>1){s.alpha=1;s.twinkleDir=-1}
+    if(s.alpha<0.05){s.alpha=0.05;s.twinkleDir=1}
+    drawStar(ctx,s.x,s.y,s.r,s.alpha);
+    if(s.r>1.2) drawCross(ctx,s.x,s.y,s.r,s.alpha*0.4);
+  });
+
+  // Draw gold sparkles
+  sparkles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.life++;
+    const progress=p.life/p.maxLife;
+    const a=p.alpha*(1-progress);
+    if(p.life>=p.maxLife){
+      p.x=Math.random()*W;p.y=H+10;
+      p.life=0;p.alpha=Math.random()*0.7+0.1;
+    }
+    ctx.save();
+    ctx.globalAlpha=Math.max(0,a);
+    ctx.fillStyle=`hsl(${45+Math.random()*20},100%,70%)`;
+    ctx.shadowBlur=8;ctx.shadowColor="#f5c842";
+    ctx.beginPath();
+    // diamond shape
+    const rr=p.r*(1-progress*0.5);
+    ctx.moveTo(p.x,p.y-rr);
+    ctx.lineTo(p.x+rr,p.y);
+    ctx.lineTo(p.x,p.y+rr);
+    ctx.lineTo(p.x-rr,p.y);
+    ctx.closePath();ctx.fill();
+    ctx.restore();
+  });
+
+  // Floating crescent moon silhouettes
+  moons.forEach(m=>{
+    m.y+=m.vy;
+    if(m.y<-30){m.y=H+30;m.x=Math.random()*W}
+    ctx.save();
+    ctx.globalAlpha=m.alpha;
+    ctx.fillStyle="#f5c842";
+    ctx.font=`${m.size}px serif`;
+    ctx.fillText("☪",m.x,m.y);
+    ctx.restore();
+  });
+
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* ========================
+   CHAT BOT
+======================== */
+const menuData={
+  "!Menu":[
+    {name:"📥 Download Game"},
+    {name:"🔗 Link Grup/Saluran"},
+    {name:"🎮 Menu Game GFFI"},
+    {name:"🎁 Kode Redeem FF"},
+    {name:"📞 Nomor Admin"},
+    {name:"📜 Peraturan Grup"}
+  ],
+  "📥 Download Game":[
+    {name:"🔥 Free Fire",link:"https://play.google.com/store/apps/details?id=com.dts.freefireth"},
+    {name:"⚡ Free Fire Max",link:"https://play.google.com/store/apps/details?id=com.dts.freefiremax"}
+  ],
+  "🔗 Link Grup/Saluran":[
+    {name:"💬 Grup GFFI",link:"https://chat.whatsapp.com/KoyczMj50VXGWq8xj9SxtI"},
+    {name:"📢 Saluran GFFI",link:"https://whatsapp.com/channel/0029VajNKZaFHWq7PubYNp3k"}
+  ],
+  "🎮 Menu Game GFFI":[
+    {name:"🐍 Snake GFFI",link:"https://snake-gffi.netlify.app"},
+    {name:"🆘 GFFI SOS",link:"https://gffisos.netlify.app"},
+    {name:"🎯 GFFI Guess",link:"https://gffi-guess01.netlify.app"},
+    {name:"🐑🐺 Domba vs Serigala",link:"https://dombadanserigala.netlify.app"}
+  ],
+  "🎁 Kode Redeem FF":[
+    {name:"🎟️ Website Redeem Garena",link:"https://reward.ff.garena.com/id"}
+  ],
+  "📞 Nomor Admin":[
+    {name:"⭐ Rafly (Utama)",link:"https://wa.me/6285857797517"},
+    {name:"🥈 Farhan (Wakil)",link:"https://wa.me/6282180596663"},
+    {name:"Asep",link:"https://wa.me/6281235724413"},
+    {name:"Ermi",link:"https://wa.me/6289518003341"},
+    {name:"Radit",link:"https://wa.me/6282291488841"},
+    {name:"Nur",link:"https://wa.me/6285230685677"},
+    {name:"Lia",link:"https://wa.me/6283119462052"},
+    {name:"Halim",link:"https://wa.me/62887435011029"}
+  ],
+  "📜 Peraturan Grup":[
+    {name:"1. Hormati sesama anggota"},
+    {name:"2. Dilarang spam & flood"},
+    {name:"3. Dilarang SARA & konten negatif"},
+    {name:"4. Gunakan bahasa yang sopan"},
+    {name:"5. Patuhi perintah Admin"}
+  ]
+};
+
+const chatEl=document.getElementById("chat");
+const restartBtn=document.getElementById("restart");
+
+function addMessage(sender,content){
+  const msg=document.createElement("div");
+  msg.className="message "+sender;
+  if(Array.isArray(content)){
+    content.forEach(i=>{
+      const div=document.createElement("div");
+      div.className="menu-item";
+      if(i.link){
+        div.innerHTML=`<a href="${i.link}" target="_blank">${i.name} ↗</a>`;
+      } else if(i.name.match(/^\d\./)){
+        div.textContent=i.name;
+       
