@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>GFFI Guess</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Segoe UI',Arial,sans-serif;
+  overflow:hidden;
+  height:100dvh;width:100vw;
+  background:#010e1a;
+  user-select:none;
+}
+
+/* ════════════════════════════
+   OCEAN BACKGROUND
+════════════════════════════ */
+#ocean{
+  position:fixed;inset:0;z-index:0;
+  /* deep ocean gradient - dark at bottom, slightly lighter at top */
+  background:
+    linear-gradient(180deg,
+      #011828 0%,
+      #01243f 20%,
+      #013358 45%,
+      #012843 70%,
+      #010f1c 100%
+    );
+}
+
+/* caustic light rays from surface */
+#ocean::before{
+  content:'';
+  position:absolute;inset:0;
+  background:
+    linear-gradient(175deg, transparent 30%, rgba(0,170,255,0.06) 46%, transparent 54%),
+    linear-gradient(162deg, transparent 35%, rgba(0,200,255,0.045) 50%, transparent 58%),
+    linear-gradient(183deg, transparent 25%, rgba(40,210,255,0.035) 42%, transparent 52%),
+    linear-gradient(170deg, transparent 50%, rgba(0,160,230,0.04) 62%, transparent 70%);
+  animation:caustic 11s ease-in-out infinite alternate;
+}
+@keyframes caustic{
+  0%{opacity:.6;transform:skewX(0deg) skewY(0deg)}
+  50%{opacity:.9;transform:skewX(1.5deg) skewY(.3deg)}
+  100%{opacity:.7;transform:skewX(-.8deg) skewY(-.2deg)}
+}
+
+/* water surface shimmer at very top */
+#oceanTop{
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(100,220,255,0.5) 20%,
+    rgba(180,240,255,0.7) 40%,
+    rgba(100,220,255,0.4) 60%,
+    rgba(180,240,255,0.6) 80%,
+    transparent 100%
+  );
+  animation:surfaceShimmer 3s linear infinite;
+  background-size:200% 100%;
+}
+@keyframes surfaceShimmer{
+  from{background-position:200% 0}
+  to{background-position:-200% 0}
+}
+
+/* deep glow in mid-water */
+#deepGlow{
+  position:absolute;
+  left:50%;top:40%;
+  width:60vw;height:60vw;
+  max-width:320px;max-height:320px;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle, rgba(0,100,200,0.08) 0%, transparent 70%);
+  border-radius:50%;
+  animation:glowPulse 6s ease-in-out infinite alternate;
+}
+@keyframes glowPulse{
+  from{opacity:.4;transform:translate(-50%,-50%) scale(.9)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
+}
+
+/* seagrass at bottom */
+#seagrass{
+  position:absolute;bottom:0;left:0;right:0;height:55px;
+  background:linear-gradient(180deg,transparent 0%,rgba(0,30,15,0.5) 100%);
+  overflow:hidden;
+}
+.grass{
+  position:absolute;bottom:0;
+  width:8px;
+  background:linear-gradient(180deg,#00cc66,#004422);
+  border-radius:4px 4px 0 0;
+  transform-origin:bottom center;
+  animation:sway 3s ease-in-out infinite alternate;
+}
+@keyframes sway{
+  from{transform:rotate(-10deg)}
+  to{transform:rotate(10deg)}
+}
+
+/* sand floor */
+#sand{
+  position:absolute;bottom:0;left:0;right:0;height:18px;
+  background:linear-gradient(180deg,transparent,rgba(140,110,55,0.25));
+}
+
+/* ── BUBBLES ── */
+.bub{
+  position:absolute;border-radius:50%;bottom:-20px;
+  background:rgba(140,220,255,0.1);
+  border:1px solid rgba(140,220,255,0.2);
+  animation:bubRise linear infinite;
+}
+@keyframes bubRise{
+  0%{transform:translateX(0) translateY(0);opacity:.7}
+  40%{transform:translateX(8px) translateY(-40vh);opacity:.45}
+  80%{transform:translateX(-6px) translateY(-80vh);opacity:.2}
+  100%{transform:translateX(3px) translateY(-108vh);opacity:0}
+}
+
+/* ── FISH wrapper: moves RIGHT → LEFT ── */
+.fish-wrap{
+  position:absolute;
+  will-change:transform;
+  animation:swimHoriz linear infinite;
+}
+@keyframes swimHoriz{
+  from{transform:translateX(calc(100vw + 70px))}
+  to  {transform:translateX(-70px)}
+}
+/* ── FISH inner: mirror to face LEFT ← + vertical zigzag ── */
+.fish{
+  display:inline-block;
+  animation:fishZig ease-in-out infinite alternate;
+}
+@keyframes fishZig{
+  from{transform:translateY(0px)}
+  to  {transform:translateY(var(--amp,0px))}
+}
+
+/* ════════════════════════════
+   START OVERLAY
+════════════════════════════ */
+#overlay{
+  position:fixed;inset:0;z-index:10;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,8,18,0.75);
+  backdrop-filter:blur(6px);
+  transition:opacity .4s;
+}
+#panel{
+  background:rgba(1,20,42,0.94);
+  border:1px solid rgba(0,170,255,0.35);
+  box-shadow:0 0 55px rgba(0,130,255,0.2),inset 0 0 30px rgba(0,80,180,0.06);
+  padding:30px 24px;border-radius:20px;
+  width:88%;max-width:320px;text-align:center;
+}
+.logo{
+  font-size:26px;font-weight:900;letter-spacing:3px;
+  background:linear-gradient(135deg,#00e5ff,#0077ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:3px;
+}
+.logo-sub{
+  font-size:11px;letter-spacing:5px;text-transform:uppercase;
+  color:rgba(80,190,255,0.45);margin-bottom:22px;
+}
+#nameInput{
+  width:100%;padding:12px 14px;
+  background:rgba(0,70,140,0.2);
+  border:1px solid rgba(0,160,255,0.3);
+  border-radius:10px;color:#fff;font-size:16px;
+  outline:none;transition:.3s;
+}
+#nameInput:focus{border-color:#00aaff;box-shadow:0 0 14px rgba(0,170,255,0.25)}
+#nameInput::placeholder{color:rgba(255,255,255,0.22)}
+#startBtn{
+  margin-top:12px;width:100%;padding:13px;
+  background:linear-gradient(135deg,#005eaa,#0099ee);
+  border:none;border-radius:10px;color:#fff;
+  font-size:16px;font-weight:700;letter-spacing:1px;cursor:pointer;
+  box-shadow:0 4px 22px rgba(0,130,255,0.4);transition:.15s;
+}
+#startBtn:active{transform:scale(.96)}
+
+/* ════════════════════════════
+   GAME UI
+════════════════════════════ */
+#main{position:relative;z-index:2;height:100dvh;display:flex;flex-direction:column;}
+#ui{padding:10px 12px 5px;display:flex;gap:6px}
+.stat{
+  flex:1;
+  background:rgba(0,25,55,0.7);
+  border:1px solid rgba(0,150,255,0.18);
+  border-radius:10px;padding:7px 8px;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  font-size:14px;font-weight:600;
+  color:rgba(160,220,255,0.9);
+  backdrop-filter:blur(4px);
+}
+.stat b{font-size:17px;color:#fff;font-weight:700}
+
+#bombBar{display:flex;justify-content:center;gap:10px;padding:2px 0 6px}
+.bicon{font-size:19px;transition:.3s}
+.bicon.used{opacity:.18;filter:grayscale(1)}
+
+/* ── BOARD ── */
+#board{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:7px;
+  padding:4px 10px 10px;
+}
+.cell{
+  aspect-ratio:1/1;
+  background:rgba(0,45,90,0.5);
+  border:1px solid rgba(0,140,220,0.2);
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:transform .1s,background .2s,border-color .2s;
+}
+.cell::after{
+  content:'?';position:absolute;
+  font-size:17px;font-weight:700;
+  color:rgba(60,160,255,0.28);pointer-events:none;
+}
+.cell.open::after{display:none}
+.cell:active{transform:scale(.87)}
+.cell span{
+  font-size:24px;opacity:0;
+  transform:scale(0) rotate(-15deg);
+  transition:opacity .2s,transform .25s cubic-bezier(.175,.885,.32,1.275);
+}
+.cell.open span{opacity:1;transform:scale(1) rotate(0)}
+.cell.open{background:rgba(0,60,110,0.6);border-color:rgba(0,170,255,0.3)}
+.cell.bomb-cell{background:rgba(180,25,25,0.45)!important;border-color:rgba(255,65,65,0.7)!important}
+.cell.prize-cell{background:rgba(0,190,160,0.22)!important;border-color:rgba(0,255,210,0.65)!important}
+.cell.prize-cell span{animation:prizeGlow .7s ease-in-out infinite alternate}
+@keyframes prizeGlow{
+  from{filter:drop-shadow(0 0 4px #00ffcc)}
+  to{filter:drop-shadow(0 0 13px #00ffff) brightness(1.4)}
+}
+
+/* SHAKE */
+@keyframes shake{
+  0%,100%{transform:translate(0,0)}
+  15%{transform:translate(-5px,2px)}
+  35%{transform:translate(5px,-3px)}
+  55%{transform:translate(-4px,3px)}
+  75%{transform:translate(4px,-2px)}
+}
+.shake{animation:shake .28s ease}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:90px;left:50%;
+  transform:translateX(-50%) translateY(14px);
+  background:rgba(0,25,50,0.93);
+  border:1px solid rgba(0,220,200,0.5);
+  color:#00ffcc;font-size:14px;font-weight:700;
+  padding:10px 20px;border-radius:28px;
+  z-index:20;opacity:0;pointer-events:none;
+  transition:opacity .3s,transform .3s;white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* END SCREEN */
+#endScreen{
+  position:fixed;inset:0;z-index:15;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0);pointer-events:none;transition:background .4s;
+}
+#endScreen.show{background:rgba(0,5,18,.9);pointer-events:auto}
+#endBox{
+  text-align:center;opacity:0;
+  transform:scale(.35) translateY(30px);
+  transition:opacity .4s .15s,transform .4s .15s cubic-bezier(.175,.885,.32,1.275);
+  padding:32px 26px;border-radius:22px;width:88%;max-width:300px;
+}
+#endScreen.show #endBox{opacity:1;transform:scale(1) translateY(0)}
+.win-box{background:rgba(0,18,40,.96);border:1px solid rgba(0,200,255,.5);box-shadow:0 0 50px rgba(0,150,255,.3)}
+.lose-box{background:rgba(16,3,3,.96);border:1px solid rgba(255,55,55,.5);box-shadow:0 0 50px rgba(210,0,0,.25)}
+#endTitle{font-size:34px;font-weight:900;letter-spacing:1px;margin-bottom:8px}
+#endScore{font-size:17px;color:rgba(190,225,255,.8);margin-bottom:4px}
+#endMsg{font-size:13px;color:rgba(255,255,255,.38);margin-bottom:22px}
+#retryBtn{
+  padding:12px 32px;
+  background:linear-gradient(135deg,#005eaa,#0099ee);
+  border:none;border-radius:10px;color:#fff;
+  font-size:14px;font-weight:700;letter-spacing:1px;
+  cursor:pointer;box-shadow:0 4px 20px rgba(0,130,255,.4);transition:.15s;
+}
+#retryBtn:active{transform:scale(.95)}
+
+#confetti{position:fixed;inset:0;z-index:14;pointer-events:none}
+#flashEl{position:fixed;inset:0;z-index:13;pointer-events:none;background:rgba(255,60,60,0);transition:background .08s}
+</style>
+</head>
+<body>
+
+<div id="ocean">
+  <div id="oceanTop"></div>
+  <div id="deepGlow"></div>
+  <div id="seagrass"></div>
+  <div id="sand"></div>
+</div>
+<canvas id="confetti"></canvas>
+<div id="flashEl"></div>
+
+<!-- START -->
+<div id="overlay">
+  <div id="panel">
+    <div class="logo">🌊 GFFI GUESS</div>
+    <div class="logo-sub">Ocean Edition</div>
+    <input id="nameInput" placeholder="Nama kamu..." maxlength="15" autocomplete="off">
+    <button id="startBtn">▶ MULAI GAME</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="main">
+  <div id="ui">
+    <div class="stat">👤 <b id="nameUI">-</b></div>
+    <div class="stat">❤️ <b id="lifeUI">2</b></div>
+    <div class="stat">⭐ <b id="scoreUI">0</b></div>
+  </div>
+  <div id="bombBar">
+    <span class="bicon" id="b0">💣</span>
+    <span class="bicon" id="b1">💣</span>
+    <span class="bicon" id="b2">💣</span>
+  </div>
+  <div id="board"></div>
+</div>
+
+<div id="toast"></div>
+
+<div id="endScreen">
+  <div id="endBox">
+    <div id="endTitle"></div>
+    <div id="endScore"></div>
+    <div id="endMsg"></div>
+    <button id="retryBtn">🔄 MAIN LAGI</button>
+  </div>
+</div>
+
+<script>
+/* ═══ AUDIO ═══ */
+var _ac=null;
+function ac(){if(!_ac)_ac=new(window.AudioContext||window.webkitAudioContext)();return _ac;}
+function tone(f,t,d,v,dc){
+  try{var c=ac(),o=c.createOscillator(),g=c.createGain();
+  o.connect(g);g.connect(c.destination);
+  o.type=t;o.frequency.value=f;
+  g.gain.setValueAtTime(v,c.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dc);
+  o.start();o.stop(c.currentTime+d);}catch(e){}
+}
+function sndClick(){tone(480,'sine',.08,.1,.08);}
+function sndBoom(){
+  try{var c=ac(),buf=c.createBuffer(1,c.sampleRate*.55,c.sampleRate),
+  data=buf.getChannelData(0);
+  for(var i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);
+  var src=c.createBufferSource(),g=c.createGain(),lp=c.createBiquadFilter();
+  lp.type='lowpass';lp.frequency.value=200;
+  src.buffer=buf;src.connect(lp);lp.connect(g);g.connect(c.destination);
+  g.gain.setValueAtTime(.75,c.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.55);
+  src.start();}catch(e){}
+  tone(65,'sine',.45,.55,.45);
+}
+function sndPrize(){[523,659,784,1047].forEach(function(n,i){setTimeout(function(){tone(n,'triangle',.2,.18,.28);},i*90);});}
+function sndWin(){[523,659,784,880,1047,1175].forEach(function(n,i){setTimeout(function(){tone(n,'triangle',.22,.14,.28);},i*110);});}
+function sndLose(){[420,310,210,100].forEach(function(n,i){setTimeout(function(){tone(n,'sawtooth',.28,.18,.3);},i*140);});}
+
+/* ═══ BUILD OCEAN ═══ */
+(function(){
+  var ocean=document.getElementById('ocean');
+
+  /* seagrass blades */
+  var sg=document.getElementById('seagrass');
+  for(var g=0;g<22;g++){
+    var blade=document.createElement('div');
+    blade.className='grass';
+    var h=18+Math.random()*28;
+    blade.style.cssText='left:'+(2+g*4.5+Math.random()*3)+'%;height:'+h+'px;animation-duration:'+(2+Math.random()*2.5)+'s;animation-delay:'+(-Math.random()*3)+'s;opacity:'+(0.5+Math.random()*0.5);
+    sg.appendChild(blade);
+  }
+
+  /* bubbles */
+  for(var b=0;b<14;b++){
+    var bub=document.createElement('div');
+    bub.className='bub';
+    var sz=3+Math.random()*9;
+    bub.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(Math.random()*100)+'%;animation-duration:'+(5+Math.random()*9)+'s;animation-delay:'+(-Math.random()*12)+'s';
+    ocean.appendChild(bub);
+  }
+
+  /* 🐟 fish — RIGHT to LEFT only, wrapper + inner for correct flip + zigzag */
+  for(var f=0;f<8;f++){
+    var wrap=document.createElement('div');
+    wrap.className='fish-wrap';
+
+    var fish=document.createElement('span');
+    fish.className='fish';
+    fish.textContent='🐟';
+
+    var topPct=12+Math.random()*68;
+    var dur=9+Math.random()*13;
+    var delay=-(Math.random()*dur);
+    var fsz=16+Math.random()*14;
+    var opacity=0.5+Math.random()*0.45;
+
+    /* zigzag: ~60% of fish get it, rest swim straight */
+    var hasZig=Math.random()<0.6;
+    var amp=hasZig?(8+Math.random()*18):0;
+    var zigDur=(1.2+Math.random()*1.5).toFixed(2);
+
+    wrap.style.cssText=
+      'top:'+topPct+'%;'+
+      'animation-duration:'+dur+'s;'+
+      'animation-delay:'+delay+'s;'+
+      'opacity:'+opacity+';';
+
+    fish.style.cssText=
+      'font-size:'+fsz+'px;'+
+      '--amp:'+amp+'px;'+
+      'animation-duration:'+zigDur+'s;';
+
+    wrap.appendChild(fish);
+    ocean.appendChild(wrap);
+  }
+})();
+
+/* ═══ GAME STATE ═══ */
+var emojis=['🐋','🐳','🐟','🐠','🐡','🦐','🦞','🦀','🦑','🐙','🐧','🦭','🦈','🐬'];
+var bombs=[], prizes=[];   /* 2 prize cells */
+var life=2,score=0,opened=0,bombsHit=0,gameEnd=false,started=false;
+var board=document.getElementById('board');
+var overlay=document.getElementById('overlay');
+
+/* ═══ START ═══ */
+document.getElementById('startBtn').onclick=function(){
+  try{ac().resume();}catch(e){}
+  var nm=document.getElementById('nameInput').value.trim()||'Player';
+  document.getElementById('nameUI').textContent=nm.length>10?nm.slice(0,10)+'…':nm;
+  overlay.style.opacity='0';
+  overlay.style.pointerEvents='none';
+  setTimeout(function(){overlay.style.display='none';},420);
+  started=true;
+  resetGame();
+};
+
+/* ═══ RESET ═══ */
+function resetGame(){
+  board.innerHTML='';
+  bombs=[];prizes=[];
+  life=2;score=0;opened=0;bombsHit=0;gameEnd=false;
+  document.getElementById('endScreen').classList.remove('show');
+  stopConfetti();updateBombBar();
+
+  /* 3 bombs */
+  while(bombs.length<3){
+    var r=Math.random()*25|0;
+    if(bombs.indexOf(r)<0) bombs.push(r);
+  }
+  /* 2 prize cells — not on bombs, not same cell */
+  while(prizes.length<2){
+    var p=Math.random()*25|0;
+    if(bombs.indexOf(p)<0&&prizes.indexOf(p)<0) prizes.push(p);
+  }
+
+  for(var i=0;i<25;i++){
+    var c=document.createElement('div');
+    c.className='cell';
+    var s=document.createElement('span');
+    c.appendChild(s);
+    (function(cell,idx){
+      cell.onclick=function(){clickCell(cell,idx);};
+    })(c,i);
+    board.appendChild(c);
+  }
+  updateUI();
+}
+document.getElementById('retryBtn').onclick=resetGame;
+
+/* ═══ CLICK ═══ */
+function clickCell(c,i){
+  if(!started||gameEnd||c.classList.contains('open'))return;
+  try{ac().resume();}catch(e){}
+  c.classList.add('open');
+
+  if(bombs.indexOf(i)>=0){
+    c.querySelector('span').textContent='💣';
+    c.classList.add('bomb-cell');
+    life--;bombsHit++;
+    updateBombBar();updateUI();
+    sndBoom();shakeBoard();flashRed();
+    if(life<=0) setTimeout(function(){endGame(false);},380);
+  } else if(prizes.indexOf(i)>=0){
+    c.querySelector('span').textContent='💎';
+    c.classList.add('prize-cell');
+    life++;opened++;score+=50;
+    updateUI();sndPrize();
+    showToast('💎 Hadiah Tersembunyi! +1 Nyawa!');
+    if(opened>=22) setTimeout(function(){endGame(true);},380);
+  } else {
+    c.querySelector('span').textContent=emojis[Math.random()*emojis.length|0];
+    score+=10;opened++;
+    updateUI();sndClick();
+    if(opened>=22) setTimeout(function(){endGame(true);},380);
+  }
+}
+
+/* ═══ UI ═══ */
+function updateUI(){
+  document.getElementById('lifeUI').textContent=life;
+  document.getElementById('scoreUI').textContent=score;
+}
+function updateBombBar(){
+  for(var i=0;i<3;i++){
+    document.getElementById('b'+i).classList[i<bombsHit?'add':'remove']('used');
+  }
+}
+
+/* ═══ END ═══ */
+function endGame(win){
+  gameEnd=true;
+  var eb=document.getElementById('endBox');
+  var et=document.getElementById('endTitle');
+  var em=document.getElementById('endMsg');
+  eb.className=win?'win-box':'lose-box';
+  if(win){
+    et.style.color='#ffd700';
+    et.textContent='🏆 YOU WIN!';
+    em.textContent='Semua ikan berhasil ditemukan!';
+    sndWin();launchConfetti();
+  }else{
+    et.style.color='#ff4444';
+    et.textContent='💀 GAME OVER';
+    em.textContent='Nyawa habis kena bom!';
+    sndLose();
+  }
+  document.getElementById('endScore').textContent='Skor: '+score+'  ❤️ '+life+' nyawa';
+  setTimeout(function(){document.getElementById('endScreen').classList.add('show');},300);
+}
+
+/* ═══ FX ═══ */
+function shakeBoard(){
+  board.classList.remove('shake');void board.offsetWidth;
+  board.classList.add('shake');
+  setTimeout(function(){board.classList.remove('shake');},300);
+}
+function flashRed(){
+  var f=document.getElementById('flashEl');
+  f.style.background='rgba(255,55,55,0.28)';
+  setTimeout(function(){f.style.background='rgba(255,55,55,0)';},320);
+}
+var _tt;
+function showToast(msg){
+  var t=document.getElementById('toast');
+  clearTimeout(_tt);t.textContent=msg;t.classList.add('show');
+  _tt=setTimeout(function(){t.classList.remove('show');},2300);
+}
+
+/* ═══ CONFETTI ═══ */
+var cc=document.getElementById('confetti'),ccx=cc.getContext('2d'),cps=[],cRaf=null;
+function launchConfetti(){
+  cc.width=innerWidth;cc.height=innerHeight;cps=[];
+  var cols=['#00ddff','#ffcc00','#00ffaa','#ff88cc','#ffffff','#aaffee'];
+  for(var i=0;i<60;i++){
+    cps.push({x:Math.random()*cc.width,y:-10-Math.random()*80,
+      w:5+Math.random()*5,h:5+Math.random()*7,
+      c:cols[Math.random()*cols.length|0],
+      rot:Math.random()*360,rv:(Math.random()-.5)*5,
+      vy:1+Math.random()*2,vx:(Math.random()-.5)*1.5});
+  }
+  function step(){
+    ccx.clearRect(0,0,cc.width,cc.height);
+    var alive=false;
+    for(var i=0;i<cps.length;i++){
+      var p=cps[i];
+      p.y+=p.vy;p.x+=p.vx;p.rot+=p.rv;p.vy+=.03;
+      if(p.y<cc.height+20)alive=true;
+      ccx.save();ccx.translate(p.x,p.y);ccx.rotate(p.rot*Math.PI/180);
+      ccx.fillStyle=p.c;ccx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ccx.restore();
+    }
+    cRaf=alive?requestAnimationFrame(step):null;
+    if(!alive)ccx.clearRect(0,0,cc.width,cc.height);
+  }
+  if(cRaf)cancelAnimationFrame(cRaf);
+  cRaf=requestAnimationFrame(step);
+}
+function stopConfetti(){
+  if(cRaf){cancelAnimationFrame(cRaf);cRaf=null;}
+  ccx.clearRect(0,0,cc.width,cc.height);
+}
+</script>
+</body>
+</html>
