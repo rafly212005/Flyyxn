@@ -2,160 +2,756 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>For Dede 🤍</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>GFFI DOMBA VS SERIGALA</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+:root{
+  --bg:#03060e;--surface:#070b17;--card:#0b1020;
+  --accent:#00e5ff;--danger:#ff1744;--success:#00e676;
+  --warn:#ffea00;--muted:#2a3560;--text:#c8d8f0;
+  --c1:#ff4d4d;--c2:#4dffea;--c3:#9d4dff;
+  --c4:#ffb84d;--c5:#4dff6a;--c6:#ff4dd2;--c7:#4da6ff;
+  --corridor:#111830;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
 body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, #fff5f7, #fdecef);
-  font-family:'Poppins', sans-serif;
+  background:var(--bg);color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+  min-height:100dvh;display:flex;flex-direction:column;
+  align-items:center;overflow-x:hidden;user-select:none;
+  background-image:radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.04) 0%, transparent 70%);
+}
+
+/* HEADER */
+.hdr{
+  width:100%;max-width:400px;
+  padding:8px 14px 6px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid #0d1530;
+  background:rgba(7,11,23,0.9);
+}
+.game-title{
+  font-family:'Orbitron',monospace;font-size:0.72em;font-weight:900;
+  color:var(--accent);letter-spacing:1.5px;
+  text-shadow:0 0 12px rgba(0,229,255,0.5);
+}
+.hud-scores{display:flex;gap:12px;font-size:0.82em;font-weight:700}
+.hud-hs{color:var(--warn)}
+.hud-sc{color:var(--success)}
+
+/* TIMER AREA */
+.timer-area{
+  width:90vw;max-width:370px;
+  padding:6px 0 4px;
+  display:flex;align-items:center;gap:8px;
+}
+#timer-label{
+  font-family:'Orbitron',monospace;font-size:0.68em;
+  color:var(--accent);min-width:48px;letter-spacing:1px;
+}
+.tbar-bg{flex:1;height:5px;background:var(--corridor);border-radius:3px;overflow:hidden}
+#tbar{
+  height:100%;width:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--success),var(--warn) 60%,var(--danger));
+  transition:width 1s linear;transform-origin:left;
+}
+
+/* STATUS */
+#status{
+  font-family:'Orbitron',monospace;font-size:0.62em;
+  letter-spacing:1.5px;color:var(--warn);
+  text-align:center;height:16px;margin-bottom:2px;
+}
+
+/* MAP */
+#map{
+  position:relative;
+  width:90vw;max-width:370px;
+  aspect-ratio:3/5.4;
+  background:var(--surface);
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid #131d3a;
+  box-shadow:
+    0 0 0 1px #0a1025,
+    0 20px 60px rgba(0,0,0,0.6),
+    inset 0 0 80px rgba(0,0,0,0.3);
+}
+/* Grid floor */
+#map::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(20,32,70,0.25) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(20,32,70,0.25) 1px,transparent 1px);
+  background-size:22px 22px;z-index:0;pointer-events:none;
+}
+/* Scanlines */
+#map::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);
+  z-index:30;pointer-events:none;
+}
+
+/* CORRIDORS */
+.cor{position:absolute;background:var(--corridor);z-index:1}
+
+/* ROOMS */
+.room{
+  position:absolute;width:29%;height:13%;
+  border-radius:10px;
+  background:linear-gradient(145deg,#0b1020,#080c1a);
+  border:1.5px solid currentColor;
+  box-shadow:0 0 12px -4px currentColor,inset 0 0 20px rgba(0,0,0,0.5);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1px;
+  cursor:pointer;z-index:5;
+  transition:box-shadow 0.3s,opacity 0.3s,transform 0.1s;
   overflow:hidden;
 }
-.container{ text-align:center; }
-
-/* ENVELOPE */
-.envelope{
-  position:relative;
-  width:220px;
-  height:140px;
-  cursor:pointer;
+/* Room wall pattern */
+.room::before{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,0.015) 25%,transparent 25%,transparent 50%,
+    rgba(255,255,255,0.015) 50%,rgba(255,255,255,0.015) 75%,transparent 75%);
+  background-size:10px 10px;pointer-events:none;
 }
-
-/* base */
-.env-body{
-  position:absolute;
-  width:100%;
-  height:100%;
-  background:#ffffff;
-  border-radius:14px;
-  box-shadow:0 20px 40px rgba(0,0,0,.12);
-  z-index:1;
+/* Door at bottom */
+.room::after{
+  content:'';position:absolute;bottom:0;left:50%;
+  transform:translateX(-50%);
+  width:20%;height:4px;
+  background:currentColor;border-radius:3px 3px 0 0;
+  opacity:0.35;transition:opacity 0.3s,box-shadow 0.3s;
 }
+.room.active::after{opacity:1;box-shadow:0 0 8px currentColor}
 
-/* flap */
-.env-flap{
-  position:absolute;
-  top:0; left:0;
-  width:0; height:0;
-  border-left:110px solid transparent;
-  border-right:110px solid transparent;
-  border-top:70px solid #fbcfe8;
-  transform-origin:top;
-  transition:transform .8s ease;
-  z-index:3;
+.room-icon{font-size:1em;line-height:1;position:relative;z-index:1}
+.room-name{
+  font-size:0.38em;font-family:'Rajdhani',sans-serif;font-weight:700;
+  letter-spacing:0.5px;color:currentColor;text-align:center;
+  line-height:1.1;position:relative;z-index:1;
+}
+.room-sheep{
+  font-size:0.75em;min-height:13px;
+  display:flex;gap:1px;flex-wrap:wrap;
+  justify-content:center;position:relative;z-index:1;
 }
 
-/* heart seal */
-.seal{
-  position:absolute;
-  width:26px;
-  height:26px;
-  background:#f43f5e;
-  top:58px; left:97px;
-  transform:rotate(-45deg);
-  z-index:4;
-}
-.seal::before,.seal::after{
-  content:"";
-  position:absolute;
-  width:26px; height:26px;
-  background:inherit;
-  border-radius:50%;
-}
-.seal::before{ top:-13px; left:0; }
-.seal::after{ left:13px; top:0; }
-
-/* letter */
-.letter{
-  position:absolute;
-  width:190px;
-  height:110px;
-  background:#fff;
-  border-radius:12px;
-  top:20px; left:15px;
-  box-shadow:0 18px 36px rgba(0,0,0,.15);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:'Playfair Display', serif;
-  font-size:28px;
-  color:#e11d48;
-  transform:translateY(40px);
-  opacity:0;
-  transition:all .8s ease;
-  z-index:2;
-}
-
-.open .env-flap{
-  transform:rotateX(180deg);
-}
-.open .letter{
-  transform:translateY(-60px);
+.room.dim{opacity:0.35;box-shadow:none!important}
+.room.active{
+  box-shadow:0 0 30px currentColor,0 0 60px -10px currentColor,inset 0 0 15px rgba(255,255,255,0.04)!important;
   opacity:1;
 }
+.room.player-here{border-width:2.5px}
+.room:active:not(.dim){transform:scale(0.96)}
 
-/* floating hearts */
-.love{
-  position:absolute;
-  color:#fb7185;
-  pointer-events:none;
+/* Flicker */
+@keyframes flicker{0%,100%{opacity:.3}50%{opacity:.7}}
+.flicker{animation:flicker .2s infinite alternate}
+
+/* TAMAN (Center Garden) */
+#taman{
+  position:absolute;z-index:4;
+  width:30%;height:11%;
+  border-radius:50%;
+  background:radial-gradient(ellipse,#0b2515,#040e09);
+  border:1.5px solid #00e676;
+  box-shadow:0 0 18px rgba(0,230,118,0.15),inset 0 0 20px rgba(0,230,118,0.06);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:1px;
+}
+.taman-label{
+  font-size:0.38em;font-family:'Rajdhani',sans-serif;
+  font-weight:700;color:#00e676;letter-spacing:1px;
+}
+#taman-sheep{
+  font-size:0.75em;display:flex;gap:1px;flex-wrap:wrap;
+  justify-content:center;max-width:100%;
 }
 
-@keyframes loveUp{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(-140px) scale(1.3); }
+/* WOLF */
+#wolf{
+  position:absolute;font-size:1.7em;z-index:10;
+  filter:drop-shadow(0 0 10px #ff6d00);
+  will-change:left,top;
 }
-@keyframes loveDown{
-  from{ opacity:1; transform:translateY(0) scale(.7); }
-  to{ opacity:0; transform:translateY(140px) scale(1.1); }
+@keyframes wolfPulse{0%,100%{filter:drop-shadow(0 0 6px #ff6d00)}50%{filter:drop-shadow(0 0 20px #ff3300)}}
+.wolf-hunt{animation:wolfPulse .4s infinite}
+
+/* COUNT INFO */
+#count{
+  text-align:center;font-size:0.78em;
+  font-weight:600;color:var(--muted);
+  padding:3px 0;
 }
 
-.hint{ margin-top:22px; font-size:14px; color:#6b7280; }
+/* OVERLAY */
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(3,6,14,0.94);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:18px;
+  z-index:200;backdrop-filter:blur(6px);
+}
+.ov-emoji{font-size:3.5em;line-height:1}
+.ov-title{
+  font-family:'Orbitron',monospace;font-size:1.6em;
+  font-weight:900;text-align:center;letter-spacing:2px;
+  line-height:1.1;
+}
+.ov-sub{
+  font-size:0.95em;color:#4a6090;
+  font-family:'Rajdhani',sans-serif;
+  text-align:center;max-width:270px;line-height:1.4;
+}
+.ov-scores{display:flex;gap:28px}
+.ov-sc-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.ov-sc-val{font-family:'Orbitron',monospace;font-size:2em;font-weight:900}
+.ov-sc-lbl{font-size:0.7em;color:#2a3560;letter-spacing:1px}
+
+.btn{
+  padding:13px 36px;border:none;border-radius:50px;
+  font-family:'Orbitron',monospace;font-size:0.82em;
+  font-weight:700;letter-spacing:1.5px;cursor:pointer;
+  transition:transform 0.15s,box-shadow 0.15s;
+}
+.btn-play{
+  background:linear-gradient(135deg,#00b4cc,#0055cc);
+  color:#fff;
+  box-shadow:0 0 24px rgba(0,229,255,0.35);
+}
+.btn-play:active{transform:scale(0.95)}
+
+/* Warning flash for no room selection */
+@keyframes warnFlash{0%,100%{background:rgba(255,60,0,0.1)}50%{background:rgba(255,60,0,0.3)}}
+.no-room-warn{animation:warnFlash 0.5s 3}
+
+/* Instruction banner */
+#instruction{
+  font-size:0.72em;font-family:'Rajdhani',sans-serif;
+  font-weight:600;color:var(--accent);
+  text-align:center;height:16px;
+  padding:2px 0;letter-spacing:0.5px;
+}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="envelope" id="env">
-    <div class="env-flap"></div>
-    <div class="env-body"></div>
-    <div class="seal"></div>
-    <div class="letter">Dede 🤍</div>
+<!-- HEADER -->
+<div class="hdr">
+  <span class="game-title">🐏 GFFI DOMBA vs SERIGALA 🐺</span>
+  <div class="hud-scores">
+    <span class="hud-hs" id="hs">🏆0</span>
+    <span class="hud-sc" id="sc">⭐0</span>
   </div>
-  <div class="hint">tap amplopnya 💌</div>
 </div>
 
-<script>
-const env = document.getElementById('env');
+<!-- TIMER -->
+<div class="timer-area">
+  <span id="timer-label">MULAI</span>
+  <div class="tbar-bg"><div id="tbar"></div></div>
+</div>
 
-env.addEventListener('click', ()=>{
-  env.classList.toggle('open');
-  spawnLove(14);
+<div id="status"></div>
+<div id="instruction">Pilih ruangan untuk bersembunyi!</div>
+
+<!-- MAP -->
+<div id="map">
+  <!-- Corridors (visual connections) -->
+  <!-- Vertical main center -->
+  <div class="cor" style="left:48.5%;top:13%;width:3%;height:72%"></div>
+  <!-- Horizontal rows -->
+  <div class="cor" style="left:12%;top:19%;width:76%;height:1.5%"></div>
+  <div class="cor" style="left:12%;top:35%;width:76%;height:1.5%"></div>
+  <div class="cor" style="left:12%;top:64%;width:76%;height:1.5%"></div>
+  <div class="cor" style="left:12%;top:79%;width:76%;height:1.5%"></div>
+
+  <!-- 7 Rooms -->
+  <div class="room" style="color:var(--c1);top:5%;left:4%"  data-idx="0">
+    <span class="room-icon">🏢</span>
+    <span class="room-name">KANTOR FLYYXN</span>
+    <div class="room-sheep"></div>
+  </div>
+  <div class="room" style="color:var(--c2);top:5%;right:4%"  data-idx="1">
+    <span class="room-icon">🏭</span>
+    <span class="room-name">PABRIK GFFI</span>
+    <div class="room-sheep"></div>
+  </div>
+  <div class="room" style="color:var(--c3);top:23%;left:4%"  data-idx="2">
+    <span class="room-icon">📦</span>
+    <span class="room-name">GUDANG GFFI</span>
+    <div class="room-sheep"></div>
+  </div>
+  <div class="room" style="color:var(--c4);top:23%;right:4%" data-idx="3">
+    <span class="room-icon">🛡️</span>
+    <span class="room-name">KEAMANAN GFFI</span>
+    <div class="room-sheep"></div>
+  </div>
+  <div class="room" style="color:var(--c5);top:68%;left:4%"  data-idx="4">
+    <span class="room-icon">🗣️</span>
+    <span class="room-name">RAPAT ADMIN</span>
+    <div class="room-sheep"></div>
+  </div>
+  <div class="room" style="color:var(--c6);top:68%;right:4%" data-idx="5">
+    <span class="room-icon">🏦</span>
+    <span class="room-name">BANK GFFI</span>
+    <div class="room-sheep"></div>
+  </div>
+  <div class="room" style="color:var(--c7);top:83%;left:35.5%" data-idx="6">
+    <span class="room-icon">🍽️</span>
+    <span class="room-name">KANTIN GFFI</span>
+    <div class="room-sheep"></div>
+  </div>
+
+  <!-- TAMAN CENTER -->
+  <div id="taman" style="left:35%;top:43%">
+    <span class="taman-label">🌿 TAMAN</span>
+    <div id="taman-sheep"></div>
+  </div>
+
+  <!-- WOLF -->
+  <div id="wolf">🐺</div>
+</div>
+
+<div id="count"></div>
+
+<script>
+/* ── AUDIO ENGINE ───────────────────────────────────────────── */
+let AC;
+function getAC(){
+  if(!AC) AC=new(window.AudioContext||window.webkitAudioContext)();
+  return AC;
+}
+
+function playBaa(){
+  try{
+    const ac=getAC();
+    const t=ac.currentTime;
+    const o=ac.createOscillator();
+    const g=ac.createGain();
+    const lfo=ac.createOscillator();
+    const lfoG=ac.createGain();
+    lfo.frequency.value=6;
+    lfoG.gain.value=40;
+    lfo.connect(lfoG);
+    lfoG.connect(o.frequency);
+    o.type='sine';
+    o.frequency.setValueAtTime(300,t);
+    o.frequency.linearRampToValueAtTime(260,t+0.15);
+    o.frequency.linearRampToValueAtTime(280,t+0.35);
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(0.18,t+0.05);
+    g.gain.setValueAtTime(0.18,t+0.3);
+    g.gain.linearRampToValueAtTime(0,t+0.5);
+    o.connect(g);g.connect(ac.destination);
+    lfo.start(t);o.start(t);o.stop(t+0.55);lfo.stop(t+0.55);
+  }catch(e){}
+}
+
+function playHowl(){
+  try{
+    const ac=getAC();
+    const t=ac.currentTime;
+    const o=ac.createOscillator();
+    const g=ac.createGain();
+    const lfo=ac.createOscillator();
+    const lfoG=ac.createGain();
+    lfo.frequency.value=4;
+    lfoG.gain.value=25;
+    lfo.connect(lfoG);
+    lfoG.connect(o.frequency);
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(180,t);
+    o.frequency.linearRampToValueAtTime(420,t+0.6);
+    o.frequency.linearRampToValueAtTime(380,t+1);
+    o.frequency.linearRampToValueAtTime(320,t+1.4);
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(0.22,t+0.1);
+    g.gain.setValueAtTime(0.22,t+1.2);
+    g.gain.linearRampToValueAtTime(0,t+1.6);
+    const flt=ac.createBiquadFilter();
+    flt.type='lowpass';flt.frequency.value=900;
+    o.connect(flt);flt.connect(g);g.connect(ac.destination);
+    lfo.start(t);o.start(t);o.stop(t+1.8);lfo.stop(t+1.8);
+  }catch(e){}
+}
+
+function playWin(){
+  try{
+    const ac=getAC();
+    const freqs=[260,330,390,520];
+    freqs.forEach((f,i)=>{
+      const t=ac.currentTime+i*0.12;
+      const o=ac.createOscillator();
+      const g=ac.createGain();
+      o.type='sine';o.frequency.value=f;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.14,t+0.04);
+      g.gain.linearRampToValueAtTime(0,t+0.2);
+      o.connect(g);g.connect(ac.destination);
+      o.start(t);o.stop(t+0.25);
+    });
+  }catch(e){}
+}
+
+function playLose(){
+  try{
+    const ac=getAC();
+    const freqs=[300,260,220,180];
+    freqs.forEach((f,i)=>{
+      const t=ac.currentTime+i*0.15;
+      const o=ac.createOscillator();
+      const g=ac.createGain();
+      o.type='sawtooth';o.frequency.value=f;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.2,t+0.04);
+      g.gain.linearRampToValueAtTime(0,t+0.25);
+      o.connect(g);g.connect(ac.destination);
+      o.start(t);o.stop(t+0.3);
+    });
+  }catch(e){}
+}
+
+/* ── DOM ─────────────────────────────────────────────────────── */
+const rooms=[...document.querySelectorAll('.room')];
+const wolf=document.getElementById('wolf');
+const statusEl=document.getElementById('status');
+const instrEl=document.getElementById('instruction');
+const countEl=document.getElementById('count');
+const tamanSheepEl=document.getElementById('taman-sheep');
+const hsEl=document.getElementById('hs');
+const scEl=document.getElementById('sc');
+const timerLabel=document.getElementById('timer-label');
+const tbar=document.getElementById('tbar');
+const map=document.getElementById('map');
+
+/* ── STATE ───────────────────────────────────────────────────── */
+let sheep=[],phase='hide';
+let score=parseInt(localStorage.getItem('gffi_score')||'0');
+let high=parseInt(localStorage.getItem('gffi_high')||'0');
+let timerInt=null,npcInt=null,baaInt=null;
+let timerMax=12;
+let playerRoom=-1; // -1 = taman (not in a room)
+
+// Daily reset
+const today=new Date().toDateString();
+if(localStorage.getItem('gffi_day')!==today){
+  score=0;
+  localStorage.setItem('gffi_day',today);
+  localStorage.setItem('gffi_score','0');
+}
+updateHud();
+
+/* ── HUD ─────────────────────────────────────────────────────── */
+function updateHud(){
+  hsEl.textContent='🏆'+high;
+  scEl.textContent='⭐'+score;
+}
+
+/* ── RESET ───────────────────────────────────────────────────── */
+function reset(){
+  document.querySelectorAll('.overlay').forEach(o=>o.remove());
+  clearInterval(timerInt);clearInterval(npcInt);clearInterval(baaInt);
+  wolf.className='';
+  wolf.style.left='46%';wolf.style.top='49%';
+  phase='hide';playerRoom=-1;
+  instrEl.textContent='Pilih ruangan untuk bersembunyi! 🐏';
+  instrEl.style.color='var(--accent)';
+  spawn();
+  updateHud();
+  startTimer();
+  startNpcMovement();
+  startBaaLoop();
+}
+
+/* ── SPAWN ───────────────────────────────────────────────────── */
+function spawn(){
+  sheep=[];
+  // Player sheep starts in taman (playerRoom = -1)
+  sheep.push({player:true,room:-1});
+  // NPC sheep: some start in taman, will scatter
+  for(let i=1;i<=14;i++){
+    sheep.push({player:false,room:-1});
+  }
+  draw();
+  // Stagger NPC entering rooms
+  setTimeout(scatterNPCs,400);
+}
+
+function scatterNPCs(){
+  sheep.forEach(s=>{
+    if(!s.player){
+      s.room=Math.floor(Math.random()*rooms.length);
+    }
+  });
+  draw();
+}
+
+/* ── DRAW ────────────────────────────────────────────────────── */
+function draw(){
+  // Clear room sheep
+  rooms.forEach(r=>r.querySelector('.room-sheep').textContent='');
+  tamanSheepEl.textContent='';
+
+  const playerInRoom=playerRoom>=0;
+  rooms.forEach((r,i)=>{
+    if(i===playerRoom) r.classList.add('player-here');
+    else r.classList.remove('player-here');
+  });
+
+  sheep.forEach(s=>{
+    const span=document.createElement('span');
+    span.textContent=s.player?'🐏':'🐑';
+    if(s.room===-1){
+      tamanSheepEl.appendChild(span);
+    } else {
+      rooms[s.room].querySelector('.room-sheep').appendChild(span);
+    }
+  });
+
+  const total=sheep.length;
+  countEl.textContent=`🐑 ${total} domba tersisa`;
+}
+
+/* ── PLAYER CLICK ROOM ───────────────────────────────────────── */
+rooms.forEach((r,i)=>{
+  r.addEventListener('click',()=>{
+    if(phase!=='hide')return;
+    playerRoom=i;
+    sheep[0].room=i;
+    instrEl.textContent='✅ Bersembunyi di: '+r.querySelector('.room-name').textContent;
+    instrEl.style.color='var(--success)';
+    playBaa();
+    draw();
+  });
 });
 
-function spawnLove(n){
-  const r = env.getBoundingClientRect();
-  for(let i=0;i<n;i++){
-    const h = document.createElement('div');
-    h.className = 'love';
-    h.textContent = '❤';
-    h.style.left = (r.left + r.width/2 + (Math.random()*60-30))+'px';
-    h.style.top  = (r.top + r.height/2)+'px';
-    h.style.fontSize = (12 + Math.random()*16)+'px';
-    const dur = 2 + Math.random()*2;
-    const up = Math.random() > .5;
-    h.style.animation = `${up?'loveUp':'loveDown'} ${dur}s ease-out forwards`;
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(), dur*1000);
-  }
+/* ── NPC MOVEMENT ────────────────────────────────────────────── */
+function startNpcMovement(){
+  npcInt=setInterval(()=>{
+    if(phase!=='hide')return;
+    sheep.forEach(s=>{
+      if(!s.player && Math.random()<0.3){
+        s.room=Math.random()<0.1?-1:Math.floor(Math.random()*rooms.length);
+      }
+    });
+    draw();
+  },1800);
 }
-</script>
 
+/* ── BAA LOOP ────────────────────────────────────────────────── */
+function startBaaLoop(){
+  // Random interval 4-8 seconds
+  function schedBaa(){
+    const delay=4000+Math.random()*4000;
+    baaInt=setTimeout(()=>{
+      if(phase==='hide'){playBaa();schedBaa();}
+    },delay);
+  }
+  schedBaa();
+}
+
+/* ── TIMER ───────────────────────────────────────────────────── */
+function startTimer(){
+  // Random time: 8–15 seconds
+  timerMax=8+Math.floor(Math.random()*8);
+  let t=timerMax;
+  tbar.style.transition='none';
+  tbar.style.width='100%';
+  timerLabel.textContent='MULAI';
+  statusEl.textContent='';
+
+  setTimeout(()=>{
+    tbar.style.transition='width 1s linear';
+  },50);
+
+  timerInt=setInterval(()=>{
+    t--;
+    const pct=Math.max(0,(t/timerMax)*100);
+    tbar.style.width=pct+'%';
+
+    if(t>0){
+      timerLabel.textContent=t+'s';
+      statusEl.textContent='';
+      if(t<=3) statusEl.textContent='⚠️ SERIGALA HAMPIR DATANG!';
+    } else {
+      clearInterval(timerInt);
+      clearInterval(npcInt);
+      clearInterval(baaInt);
+      timerLabel.textContent='0s';
+      search();
+    }
+  },1000);
+}
+
+/* ── SEARCH PHASE ────────────────────────────────────────────── */
+function search(){
+  phase='search';
+  statusEl.textContent='🐺 SERIGALA MENCARI...';
+  instrEl.textContent='';
+  playHowl();
+
+  // Highlight dim
+  rooms.forEach(r=>{r.classList.remove('player-here');r.classList.add('dim','flicker')});
+
+  // Wolf animation
+  wolf.classList.add('wolf-hunt');
+
+  // Check if player chose a room
+  const playerChoseRoom=playerRoom>=0;
+
+  // 1 or 2 rooms checked randomly
+  const checks=(Math.random()<0.55)?1:2;
+  const order=[...Array(rooms.length).keys()].sort(()=>Math.random()-0.5).slice(0,checks);
+
+  let delay=0;
+  order.forEach((idx,i)=>{
+    setTimeout(()=>hunt(idx,i===order.length-1,playerChoseRoom),delay);
+    delay+=4800;
+  });
+}
+
+/* ── HUNT ROOM ───────────────────────────────────────────────── */
+function hunt(idx,last,playerChoseRoom){
+  const room=rooms[idx];
+  room.classList.remove('dim','flicker');
+  room.classList.add('active');
+  statusEl.textContent='🚨 RUANGAN: '+room.querySelector('.room-name').textContent;
+
+  const r=room.getBoundingClientRect();
+  const m=map.getBoundingClientRect();
+  const mx=map.offsetWidth;
+  const my=map.offsetHeight;
+
+  const targetX=((r.left-m.left)/mx)*100+3;
+  const targetY=((r.top-m.top)/my)*100+2;
+  const speed=mx/160;
+
+  function moveWolf(){
+    const cx=parseFloat(wolf.style.left||'46');
+    const cy=parseFloat(wolf.style.top||'49');
+    const dx=targetX-cx;
+    const dy=targetY-cy;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+
+    if(dist<speed*0.7){
+      wolf.style.left=targetX+'%';
+      wolf.style.top=targetY+'%';
+
+      setTimeout(()=>{
+        // Check if player is here
+        if(idx===playerRoom){
+          playLose();
+          end(false);
+          return;
+        }
+        // Remove NPC sheep in this room
+        sheep=sheep.filter(s=>s.player||s.room!==idx);
+        draw();
+        room.classList.remove('active');
+        room.classList.add('dim');
+        if(last) setTimeout(()=>end(true,playerChoseRoom),1400);
+      },700);
+      return;
+    }
+
+    wolf.style.left=(cx+dx/dist*speed*0.8)+'%';
+    wolf.style.top=(cy+dy/dist*speed*0.8)+'%';
+    requestAnimationFrame(moveWolf);
+  }
+  requestAnimationFrame(moveWolf);
+}
+
+/* ── END ─────────────────────────────────────────────────────── */
+function end(win,playerChoseRoom=true){
+  rooms.forEach(r=>{r.classList.remove('dim','flicker','active','player-here')});
+  wolf.classList.remove('wolf-hunt');
+
+  let gotScore=false;
+  if(win && playerChoseRoom){
+    score+=1;gotScore=true;
+    if(score>high){high=score;localStorage.setItem('gffi_high',high);}
+    localStorage.setItem('gffi_score',score);
+    playWin();
+  } else if(win && !playerChoseRoom){
+    // Survived but no score
+  } else {
+    // Caught
+  }
+  updateHud();
+
+  const o=document.createElement('div');
+  o.className='overlay';
+
+  let emoji,title,sub,color;
+  if(!win){
+    emoji='😱';title='KETANGKAP!';
+    sub='Serigala menemukanmu... Coba lagi!';color='var(--danger)';
+  } else if(!playerChoseRoom){
+    emoji='😅';title='SELAMAT!';
+    sub='Kamu tidak memilih ruangan.\nScore tidak bertambah!';color='var(--warn)';
+  } else {
+    emoji='🎉';title='LOLOS!';
+    sub='Kamu berhasil bersembunyi!';color='var(--success)';
+  }
+
+  o.innerHTML=`
+    <div class="ov-emoji">${emoji}</div>
+    <div class="ov-title" style="color:${color}">${title}</div>
+    <div class="ov-sub">${sub}</div>
+    <div class="ov-scores">
+      <div class="ov-sc-item">
+        <span class="ov-sc-val" style="color:var(--success)">${score}</span>
+        <span class="ov-sc-lbl">SKOR</span>
+      </div>
+      <div class="ov-sc-item">
+        <span class="ov-sc-val" style="color:var(--warn)">${high}</span>
+        <span class="ov-sc-lbl">REKOR</span>
+      </div>
+    </div>
+    <button class="btn btn-play" id="btnPlay">▶ MAIN LAGI</button>
+  `;
+  document.body.appendChild(o);
+  document.getElementById('btnPlay').onclick=reset;
+}
+
+/* ── INIT ────────────────────────────────────────────────────── */
+// Welcome overlay
+(function showWelcome(){
+  const o=document.createElement('div');
+  o.className='overlay';
+  o.innerHTML=`
+    <div class="ov-emoji">🐏🐺</div>
+    <div class="ov-title" style="color:var(--accent)">GFFI<br>DOMBA VS SERIGALA</div>
+    <div class="ov-sub">
+      Klik ruangan untuk bersembunyi.<br>
+      Jika tidak memilih ruangan,<br><b style="color:var(--warn)">tidak ada score!</b><br><br>
+      Serigala akan mengecek 1–2 ruangan secara acak.
+    </div>
+    <div class="ov-scores">
+      <div class="ov-sc-item">
+        <span class="ov-sc-val" style="color:var(--success)">${score}</span>
+        <span class="ov-sc-lbl">SKOR HARI INI</span>
+      </div>
+      <div class="ov-sc-item">
+        <span class="ov-sc-val" style="color:var(--warn)">${high}</span>
+        <span class="ov-sc-lbl">REKOR</span>
+      </div>
+    </div>
+    <button class="btn btn-play" id="btnStart">▶ MULAI MAIN</button>
+  `;
+  document.body.appendChild(o);
+  document.getElementById('btnStart').onclick=()=>{
+    // Unlock audio context on user gesture
+    try{getAC();}catch(e){}
+    reset();
+  };
+})();
+</script>
 </body>
 </html>
