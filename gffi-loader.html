@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>GFFI — Free Fire Indonesia</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Share+Tech+Mono&display=swap');
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#04020a;font-family:'Share Tech Mono',monospace;}
+
+/* ═══ SHARED BG ═══ */
+.bg{
+  position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 110%,#1a0500 0%,transparent 55%),
+    radial-gradient(ellipse 80% 60% at 20% 20%,#0a003a 0%,transparent 50%),
+    radial-gradient(ellipse 60% 50% at 80% 80%,#1a0008 0%,transparent 50%),
+    linear-gradient(160deg,#04020c 0%,#080318 40%,#04020a 100%);
+}
+.glow{position:fixed;border-radius:50%;z-index:0;pointer-events:none;filter:blur(60px);}
+.glow1{width:50vw;height:50vw;top:60%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,70,0,.12) 0%,transparent 70%);animation:gPulse 4s ease-in-out infinite;}
+.glow2{width:40vw;height:40vw;top:20%;left:15%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(100,0,200,.08) 0%,transparent 70%);animation:gPulse 6s ease-in-out infinite reverse;}
+.glow3{width:35vw;height:35vw;top:30%;right:5%;transform:translateY(-50%);background:radial-gradient(circle,rgba(255,140,0,.07) 0%,transparent 70%);animation:gPulse 5s 1s ease-in-out infinite;}
+@keyframes gPulse{0%,100%{opacity:.6}50%{opacity:1}}
+.grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,90,0,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,90,0,.04) 1px,transparent 1px);background-size:48px 48px;animation:gridScroll 10s linear infinite;will-change:transform;}
+@keyframes gridScroll{0%{transform:translateY(0)}100%{transform:translateY(48px)}}
+.floor{position:fixed;bottom:-10%;left:-20%;right:-20%;height:55%;z-index:0;pointer-events:none;background-image:repeating-linear-gradient(90deg,rgba(255,80,0,.06) 0,rgba(255,80,0,.06) 1px,transparent 1px,transparent 7%),repeating-linear-gradient(rgba(255,80,0,.05) 0,rgba(255,80,0,.05) 1px,transparent 1px,transparent 10%);transform:perspective(280px) rotateX(65deg);transform-origin:50% 100%;mask-image:linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 100%);-webkit-mask-image:linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 100%);}
+.vig{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 90% 90% at 50% 50%,transparent 40%,rgba(2,1,8,.85) 100%);}
+.scan{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.scan::after{content:'';position:absolute;left:0;right:0;height:120px;background:linear-gradient(180deg,transparent 0%,rgba(255,80,0,.04) 50%,transparent 100%);animation:scanMove 5s linear infinite;will-change:transform;}
+@keyframes scanMove{0%{transform:translateY(-120px)}100%{transform:translateY(100vh)}}
+.hline{position:fixed;left:0;right:0;height:1px;z-index:2;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,100,0,.35),rgba(255,200,0,.6),rgba(255,100,0,.35),transparent);animation:hlPulse 3s ease-in-out infinite;}
+.hline.t{top:0}.hline.b{bottom:0;animation-delay:1.5s}
+@keyframes hlPulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+/* ═══ COUNTDOWN SCREEN ═══ */
+#countdown{
+  position:fixed;inset:0;z-index:20;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;
+}
+
+/* Top badge */
+.badge{
+  font-size:.52rem;letter-spacing:.35em;
+  color:#ff4500;text-shadow:0 0 10px #ff4500;
+  text-transform:uppercase;margin-bottom:6px;
+  animation:badgeBlink 1.5s step-end infinite;
+}
+@keyframes badgeBlink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Lock icon */
+.lock-wrap{
+  position:relative;
+  width:clamp(80px,16vw,110px);height:clamp(80px,16vw,110px);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:clamp(12px,3vw,22px);
+}
+.lock-ring{
+  position:absolute;inset:0;border-radius:50%;
+  border:1px solid rgba(255,80,0,.3);
+  animation:rCW 12s linear infinite;will-change:transform;
+}
+.lock-ring::before{content:'';position:absolute;width:5px;height:5px;border-radius:50%;top:-2.5px;left:50%;transform:translateX(-50%);background:#ff4500;box-shadow:0 0 8px #ff4500;}
+.lock-ring2{
+  position:absolute;inset:14%;border-radius:50%;
+  border:1px dashed rgba(255,140,0,.2);
+  animation:rCCW 7s linear infinite;will-change:transform;
+}
+@keyframes rCW{to{transform:rotate(360deg)}}
+@keyframes rCCW{to{transform:rotate(-360deg)}}
+.lock-hex{
+  width:clamp(52px,10vw,72px);height:clamp(52px,10vw,72px);
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  background:radial-gradient(circle at 40% 30%,#2a0800,#110300,#06020a);
+  display:flex;align-items:center;justify-content:center;
+  animation:hexPulse 2.5s ease-in-out infinite;
+}
+@keyframes hexPulse{0%,100%{filter:drop-shadow(0 0 6px rgba(255,60,0,.5))}50%{filter:drop-shadow(0 0 18px rgba(255,80,0,.9))}}
+.lock-icon{font-size:clamp(1.4rem,4vw,2rem);}
+
+/* ACCESS DENIED title */
+.denied-title{
+  font-family:'Teko',sans-serif;font-weight:700;
+  font-size:clamp(1.8rem,7vw,3.2rem);
+  letter-spacing:.2em;color:#ff4500;
+  text-shadow:0 0 20px #ff4500,0 0 50px rgba(255,69,0,.4);
+  text-align:center;line-height:1;
+  animation:titleFlick 6s ease-in-out infinite;
+}
+@keyframes titleFlick{0%,85%,90%,100%{opacity:1}87%{opacity:.5}88%{opacity:.9}}
+
+.denied-sub{
+  font-size:clamp(.55rem,2vw,.72rem);
+  letter-spacing:.4em;color:rgba(255,140,0,.65);
+  text-transform:uppercase;margin-top:4px;margin-bottom:clamp(14px,3vw,24px);
+  text-align:center;
+}
+
+/* HUD box */
+.hud-box{
+  border:1px solid rgba(255,100,0,.2);
+  padding:clamp(10px,2.5vw,18px) clamp(16px,4vw,32px);
+  position:relative;margin-bottom:clamp(14px,3vw,24px);
+  background:rgba(255,40,0,.04);
+  backdrop-filter:blur(4px);
+  width:min(400px,85vw);
+}
+.hud-box::before,.hud-box::after{
+  content:'';position:absolute;width:10px;height:10px;
+  border-color:rgba(255,140,0,.5);border-style:solid;
+}
+.hud-box::before{top:-1px;left:-1px;border-width:1.5px 0 0 1.5px;}
+.hud-box::after{bottom:-1px;right:-1px;border-width:0 1.5px 1.5px 0;}
+
+.hud-row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:clamp(.5rem,1.6vw,.62rem);letter-spacing:.15em;
+  color:rgba(255,140,0,.45);padding:3px 0;border-bottom:1px solid rgba(255,80,0,.07);
+}
+.hud-row:last-child{border-bottom:none;}
+.hud-val{color:#ff8800;text-shadow:0 0 6px rgba(255,140,0,.4);}
+
+/* Countdown boxes */
+.cd-label{
+  font-size:.5rem;letter-spacing:.25em;color:rgba(255,140,0,.4);
+  text-transform:uppercase;text-align:center;
+  margin-bottom:8px;
+}
+.cd-boxes{
+  display:flex;gap:clamp(8px,2vw,16px);
+  margin-bottom:clamp(14px,3vw,22px);
+}
+.cd-box{
+  display:flex;flex-direction:column;align-items:center;
+  background:rgba(255,40,0,.06);
+  border:1px solid rgba(255,100,0,.2);
+  padding:clamp(8px,2vw,14px) clamp(10px,2.5vw,18px);
+  position:relative;
+  min-width:clamp(54px,12vw,76px);
+}
+.cd-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,140,0,.4),transparent);}
+.cd-num{
+  font-family:'Teko',sans-serif;font-weight:700;
+  font-size:clamp(1.8rem,6vw,3rem);
+  color:#ffcc00;text-shadow:0 0 14px #ffcc00,0 0 30px rgba(255,200,0,.3);
+  line-height:1;
+}
+.cd-unit{font-size:.46rem;letter-spacing:.2em;color:rgba(255,140,0,.4);text-transform:uppercase;margin-top:2px;}
+
+/* Notification banner */
+.notif{
+  width:min(400px,85vw);
+  border:1px solid rgba(255,200,0,.25);
+  background:rgba(255,100,0,.06);
+  padding:clamp(8px,2vw,12px) clamp(12px,3vw,20px);
+  display:flex;align-items:flex-start;gap:10px;
+  position:relative;overflow:hidden;
+}
+.notif::before{
+  content:'';position:absolute;top:0;left:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,transparent,#ff8800,#ffcc00,#ff8800,transparent);
+  animation:notifBar 2s ease-in-out infinite;
+}
+@keyframes notifBar{0%,100%{opacity:.4}50%{opacity:1}}
+.notif-icon{font-size:1rem;flex-shrink:0;margin-top:1px;}
+.notif-text{flex:1;}
+.notif-title{font-size:.62rem;letter-spacing:.2em;color:#ff8800;margin-bottom:3px;text-shadow:0 0 6px rgba(255,140,0,.4);}
+.notif-body{font-size:.54rem;letter-spacing:.1em;color:rgba(255,180,0,.55);line-height:1.7;}
+.notif-time{font-size:.48rem;letter-spacing:.15em;color:rgba(255,140,0,.3);margin-top:4px;}
+
+/* Corner HUD (shared) */
+.hb{position:absolute;width:18px;height:18px;animation:hbPulse 3.5s ease-in-out infinite;}
+.hb.tl{top:10px;left:10px;border-top:1.5px solid rgba(255,130,0,.4);border-left:1.5px solid rgba(255,130,0,.4);}
+.hb.tr{top:10px;right:10px;border-top:1.5px solid rgba(255,130,0,.4);border-right:1.5px solid rgba(255,130,0,.4);}
+.hb.bl{bottom:10px;left:10px;border-bottom:1.5px solid rgba(255,130,0,.4);border-left:1.5px solid rgba(255,130,0,.4);}
+.hb.br{bottom:10px;right:10px;border-bottom:1.5px solid rgba(255,130,0,.4);border-right:1.5px solid rgba(255,130,0,.4);}
+@keyframes hbPulse{0%,100%{opacity:.3}50%{opacity:.8}}
+.clabel{position:absolute;font-size:.48rem;letter-spacing:.1em;color:rgba(255,140,0,.3);line-height:2.1;}
+.cl-tl{top:16px;left:16px}.cl-tr{top:16px;right:16px;text-align:right}
+.cl-bl{bottom:16px;left:16px}.cl-br{bottom:16px;right:16px;text-align:right}
+
+/* ═══ LOADING SCREEN ═══ */
+#loader{
+  position:fixed;inset:0;z-index:20;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity 1.4s ease,transform 1.4s ease;
+}
+#loader.active{display:flex;}
+#loader.exit{opacity:0;transform:scale(1.03);pointer-events:none;}
+
+.emblem{position:relative;width:clamp(130px,26vw,190px);height:clamp(130px,26vw,190px);display:flex;align-items:center;justify-content:center;margin-bottom:clamp(18px,3.5vw,32px);}
+.ring{position:absolute;border-radius:50%;will-change:transform;}
+.ri1{inset:0;border:1px solid rgba(255,140,0,.18);animation:rCW 16s linear infinite;}
+.ri1::before,.ri1::after{content:'';position:absolute;border-radius:50%;width:5px;height:5px;top:-2.5px;left:50%;transform:translateX(-50%);background:#ff8800;box-shadow:0 0 8px #ff8800,0 0 18px #ff4500;}
+.ri1::after{top:auto;bottom:-2.5px;background:#ffcc00;box-shadow:0 0 8px #ffcc00;}
+.ri2{inset:14%;border:1px solid rgba(255,60,0,.22);animation:rCCW 10s linear infinite;}
+.ri2::before{content:'';position:absolute;border-radius:50%;width:4px;height:4px;top:-2px;left:50%;transform:translateX(-50%);background:#ff4500;box-shadow:0 0 8px #ff4500;}
+.ri3{inset:28%;border:1px dashed rgba(255,200,0,.2);animation:rCW 7s linear infinite;}
+.core-hex{width:clamp(64px,13vw,96px);height:clamp(64px,13vw,96px);position:relative;z-index:5;display:flex;align-items:center;justify-content:center;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);background:radial-gradient(circle at 40% 30%,#2a0f00,#140700,#05030a);animation:hexPulse 3s ease-in-out infinite;will-change:opacity;}
+.flame{width:50%;height:58%;position:relative;z-index:6;filter:drop-shadow(0 0 4px #ff8800) drop-shadow(0 0 10px #ff4500);animation:flameP 2.2s ease-in-out infinite;will-change:transform;}
+@keyframes flameP{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.08) translateY(-2px)}}
+
+.ltitle{font-family:'Teko',sans-serif;font-weight:700;font-size:clamp(3rem,12vw,5.8rem);letter-spacing:.2em;color:#fff;line-height:1;text-shadow:0 0 18px #ff8800,0 0 45px rgba(255,120,0,.35);animation:titleFlick 9s ease-in-out infinite;will-change:opacity;}
+.lsub{font-size:clamp(.52rem,2vw,.72rem);letter-spacing:.45em;color:#ff8800;text-transform:uppercase;opacity:.7;margin-top:4px;text-align:center;}
+.divider{width:min(380px,76vw);height:1px;background:linear-gradient(90deg,transparent,rgba(255,140,0,.15),#ff8800,rgba(255,140,0,.15),transparent);margin:clamp(8px,1.8vw,14px) 0;position:relative;}
+.divider::before,.divider::after{content:'';width:3px;height:3px;border-radius:50%;background:#ff8800;box-shadow:0 0 6px #ff8800;position:absolute;top:50%;transform:translateY(-50%);}
+.divider::before{left:0}.divider::after{right:0}
+.lt-box{height:24px;display:flex;align-items:center;justify-content:center;margin-bottom:clamp(14px,2.5vw,24px);}
+.lt{font-size:clamp(.62rem,1.9vw,.76rem);letter-spacing:.22em;color:#ff8800;text-shadow:0 0 7px #ff8800;opacity:0;transition:opacity .3s ease;display:flex;align-items:center;gap:8px;}
+.lt.on{opacity:1}
+.lt::before{content:'▶';font-size:.42rem;color:#ff4500;animation:cur .85s step-end infinite;}
+@keyframes cur{0%,100%{opacity:1}50%{opacity:0}}
+.pg{width:min(380px,76vw);}
+.pg-top{display:flex;justify-content:space-between;font-size:.52rem;letter-spacing:.12em;color:rgba(255,140,0,.4);margin-bottom:6px;}
+.pg-track{height:2px;background:rgba(255,60,0,.1);border-radius:2px;position:relative;}
+.pg-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,#ff3300,#ff8800,#ffcc00,#ff8800,#ff3300);background-size:400% 100%;box-shadow:0 0 10px #ff8800,0 0 22px rgba(255,140,0,.28);width:0%;transition:width .22s ease;will-change:width;animation:pgShift 2s linear infinite;}
+.pg-bar::after{content:'';position:absolute;right:-1px;top:-5px;width:2px;height:12px;background:#fff;border-radius:1px;box-shadow:0 0 6px #fff,0 0 14px #ffcc00;}
+@keyframes pgShift{0%{background-position:0 0}100%{background-position:400% 0}}
+.stats{display:flex;justify-content:center;gap:clamp(10px,3.5vw,32px);margin-top:clamp(10px,2vw,18px);}
+.stat{text-align:center;}
+.sv{font-family:'Teko',sans-serif;font-weight:700;font-size:clamp(.9rem,2.6vw,1.25rem);color:#ffcc00;text-shadow:0 0 8px #ffcc00;display:block;line-height:1.1;}
+.sl{font-size:.46rem;letter-spacing:.14em;color:rgba(255,140,0,.42);text-transform:uppercase;}
+
+/* ═══ SITE ═══ */
+#site{position:fixed;inset:0;z-index:5;opacity:0;pointer-events:none;transition:opacity 1.2s ease .3s;}
+#site.on{opacity:1;pointer-events:all;}
+#site iframe{width:100%;height:100%;border:none;display:block;}
+
+/* UNLOCK FLASH */
+#unlock-flash{
+  position:fixed;inset:0;z-index:100;
+  background:radial-gradient(circle,rgba(255,140,0,.25),transparent 70%);
+  opacity:0;pointer-events:none;
+  animation:none;
+}
+#unlock-flash.go{animation:flash 1.2s ease-out forwards;}
+@keyframes flash{0%{opacity:1}100%{opacity:0}}
+
+/* UNLOCK NOTIF POPUP */
+#unlock-popup{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-120px);
+  z-index:110;
+  width:min(360px,88vw);
+  background:linear-gradient(135deg,rgba(20,8,0,.95),rgba(30,12,0,.95));
+  border:1px solid rgba(255,180,0,.4);
+  padding:14px 20px;
+  display:flex;align-items:flex-start;gap:12px;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 8px 40px rgba(255,80,0,.25);
+}
+#unlock-popup.show{transform:translateX(-50%) translateY(0);}
+#unlock-popup::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#ff8800,#ffcc00,#ff8800,transparent);}
+.upop-icon{font-size:1.5rem;flex-shrink:0;}
+.upop-title{font-size:.7rem;letter-spacing:.25em;color:#ffcc00;text-shadow:0 0 10px #ffcc00;margin-bottom:4px;}
+.upop-body{font-size:.58rem;letter-spacing:.12em;color:rgba(255,180,0,.7);line-height:1.7;}
+
+@media(max-width:360px){.clabel{display:none;}.hb{width:14px;height:14px;}}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="bg"></div>
+<div class="glow glow1"></div>
+<div class="glow glow2"></div>
+<div class="glow glow3"></div>
+<div class="grid"></div>
+<div class="floor"></div>
+<div class="vig"></div>
+<div class="scan"></div>
+<div class="hline t"></div>
+<div class="hline b"></div>
+
+<!-- UNLOCK EFFECTS -->
+<div id="unlock-flash"></div>
+<div id="unlock-popup">
+  <div class="upop-icon">🔥</div>
+  <div>
+    <div class="upop-title">⚡ GFFI TELAH DIBUKA!</div>
+    <div class="upop-body" id="upop-body">Selamat datang, Pejuang GFFI!<br>Akses penuh telah diberikan selamanya.</div>
+  </div>
+</div>
+
+<!-- ════════════ COUNTDOWN SCREEN ════════════ -->
+<div id="countdown">
+  <div class="hb tl"></div><div class="hb tr"></div>
+  <div class="hb bl"></div><div class="hb br"></div>
+  <div class="clabel cl-tl">GFFI v3.1<br>SRV: ID-MAIN<br>STATUS: LOCKED</div>
+  <div class="clabel cl-tr">REGION: INDONESIA<br>MODE: WAITING<br>ACCESS: DENIED</div>
+  <div class="clabel cl-bl">© GFFI COMMUNITY<br>FREE FIRE INDONESIA</div>
+  <div class="clabel cl-br">HARI INI: <span id="cd-today">—</span><br>BUKA: SABTU</div>
+
+  <div class="badge">⚠ sistem terkunci ⚠</div>
+
+  <div class="lock-wrap">
+    <div class="lock-ring"></div>
+    <div class="lock-ring2"></div>
+    <div class="lock-hex"><div class="lock-icon">🔒</div></div>
+  </div>
+
+  <div class="denied-title">ACCESS DENIED</div>
+  <div class="denied-sub">GFFI Community Portal</div>
+
+  <!-- HUD info box -->
+  <div class="hud-box">
+    <div class="hud-row"><span>STATUS AKSES</span><span class="hud-val" id="hud-status">TERKUNCI</span></div>
+    <div class="hud-row"><span>HARI INI</span><span class="hud-val" id="hud-today">—</span></div>
+    <div class="hud-row"><span>WAKTU SEKARANG</span><span class="hud-val" id="hud-now">—</span></div>
+    <div class="hud-row"><span>DIBUKA PADA</span><span class="hud-val" id="hud-open">Sabtu, 00:00:00</span></div>
+    <div class="hud-row"><span>SISA WAKTU</span><span class="hud-val" id="hud-remain" style="color:#ff4500;text-shadow:0 0 8px rgba(255,60,0,.6)">—</span></div>
+  </div>
+
+  <!-- Countdown digits -->
+  <div class="cd-label">MENUJU PEMBUKAAN GFFI</div>
+  <div class="cd-boxes">
+    <div class="cd-box"><span class="cd-num" id="cd-d">00</span><span class="cd-unit">Hari</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-h">00</span><span class="cd-unit">Jam</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-m">00</span><span class="cd-unit">Menit</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-s">00</span><span class="cd-unit">Detik</span></div>
+  </div>
+
+  <!-- Notification -->
+  <div class="notif">
+    <div class="notif-icon">📣</div>
+    <div class="notif-text">
+      <div class="notif-title">NOTIFIKASI SISTEM — GFFI</div>
+      <div class="notif-body" id="notif-body">
+        Komunitas GFFI akan dibuka pada <strong style="color:#ff8800">hari Sabtu</strong>.<br>
+        Setelah dibuka, akses akan berlaku <strong style="color:#ffcc00">selamanya</strong> tanpa batas waktu.<br>
+        Persiapkan dirimu, Pejuang! ⚔️
+      </div>
+      <div class="notif-time" id="notif-time">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ LOADER SCREEN ════════════ -->
+<div id="loader">
+  <div class="hb tl"></div><div class="hb tr"></div>
+  <div class="hb bl"></div><div class="hb br"></div>
+  <div class="clabel cl-tl">GFFI v3.1<br>SRV: ID-MAIN<br>PING: <span id="l-ping">—</span>ms</div>
+  <div class="clabel cl-tr">REGION: ID<br>MODE: RANKED<br>SLOT: <span id="l-slot">—</span>/50</div>
+  <div class="clabel cl-bl">© GFFI COMMUNITY<br>FREE FIRE INDONESIA</div>
+  <div class="clabel cl-br">EXP: <span id="l-exp">—</span><br>RANK: <span id="l-rank">—</span></div>
+
+  <div class="emblem">
+    <div class="ring ri1"></div>
+    <div class="ring ri2"></div>
+    <div class="ring ri3"></div>
+    <div class="core-hex">
+      <svg class="flame" viewBox="0 0 60 76" fill="none">
+        <path d="M30 3C30 3 48 21 48 37c0 10-5 16-11 20 3-7 0-14-4-17 0 7-4 12-7 17C20 53 14 47 14 37 14 21 30 3 30 3z" fill="url(#f1)"/>
+        <path d="M30 25s8 10 8 20c0 6-3 9-5 11 1-4 0-9-3-12 0 5-2 8-5 12-3-3-4-6-4-11 0-10 9-20 9-20z" fill="url(#f2)"/>
+        <path d="M25 60Q30 73 35 60Q32 65 30 67Q28 65 25 60Z" fill="url(#f1)" opacity=".65"/>
+        <defs>
+          <linearGradient id="f1" x1="30" y1="3" x2="30" y2="73" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffd700"/><stop offset="55%" stop-color="#ff8800"/><stop offset="100%" stop-color="#ff3300"/>
+          </linearGradient>
+          <linearGradient id="f2" x1="30" y1="25" x2="30" y2="63" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fffacc"/><stop offset="55%" stop-color="#ffd700"/><stop offset="100%" stop-color="#ff8800"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+  </div>
+
+  <div class="ltitle">GFFI</div>
+  <div class="lsub">Garena Free Fire Indonesia</div>
+  <div class="divider"></div>
+
+  <div class="lt-box"><div class="lt on" id="l-txt">Menginisialisasi sistem…</div></div>
+
+  <div class="pg">
+    <div class="pg-top"><span>BATTLE SYSTEM INIT</span><span id="l-pct">0%</span></div>
+    <div class="pg-track"><div class="pg-bar" id="l-bar"></div></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="sv" id="l-map">—</span><span class="sl">MAP LOADED</span></div>
+    <div class="stat"><span class="sv" id="l-ply">—</span><span class="sl">PEMAIN AKTIF</span></div>
+    <div class="stat"><span class="sv" id="l-sts">—</span><span class="sl">STATUS</span></div>
+  </div>
+</div>
+
+<!-- SITE -->
+<div id="site">
+  <iframe src="https://garena-freefire-indonesia.netlify.app/" title="GFFI" loading="lazy"></iframe>
+</div>
+
+<script>
+const DAYS  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const MONTHS= ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const KEY   = 'gffi_unlocked_v1';
+
+// ── Helpers ──
+function pad(n){return String(n).padStart(2,'0');}
+function fmtTime(d){return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;}
+function fmtDate(d){return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;}
+
+// ── Get next Saturday midnight ──
+function getNextSaturday(){
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun .. 6=Sat
+  // days until Saturday
+  const daysUntil = (6 - day + 7) % 7;
+  const sat = new Date(now);
+  sat.setDate(now.getDate() + daysUntil);
+  sat.setHours(0,0,0,0);
+  return sat;
+}
+
+// ── Check unlock ──
+function isUnlocked(){
+  try{
+    if(localStorage.getItem(KEY)==='true') return true;
+  }catch(e){}
+  // Check if it's Saturday or past the target Saturday
+  const now = new Date();
+  const sat = getNextSaturday();
+  // If daysUntil === 0 and sat <= now (i.e. today IS Saturday)
+  if(now.getDay() === 6){
+    tryUnlock();
+    return true;
+  }
+  return false;
+}
+
+function tryUnlock(){
+  try{ localStorage.setItem(KEY,'true'); }catch(e){}
+}
+
+// ══════════════════════════════
+//  COUNTDOWN MODE
+// ══════════════════════════════
+function startCountdown(){
+  const cdEl = document.getElementById('countdown');
+  const sat  = getNextSaturday();
+
+  function tick(){
+    const now = new Date();
+
+    // Check if unlocked now
+    if(now >= sat || now.getDay() === 6){
+      tryUnlock();
+      transitionToUnlock();
+      return;
+    }
+
+    const diff = sat - now;
+    const dd = Math.floor(diff / 86400000);
+    const hh = Math.floor((diff % 86400000) / 3600000);
+    const mm = Math.floor((diff % 3600000)  / 60000);
+    const ss = Math.floor((diff % 60000)    / 1000);
+
+    // Update countdown boxes
+    document.getElementById('cd-d').textContent = pad(dd);
+    document.getElementById('cd-h').textContent = pad(hh);
+    document.getElementById('cd-m').textContent = pad(mm);
+    document.getElementById('cd-s').textContent = pad(ss);
+
+    // HUD
+    document.getElementById('hud-today').textContent  = fmtDate(now);
+    document.getElementById('hud-now').textContent    = fmtTime(now);
+    document.getElementById('hud-open').textContent   = `${fmtDate(sat)}, 00:00`;
+    document.getElementById('hud-remain').textContent = `${pad(dd)}h ${pad(hh)}j ${pad(mm)}m ${pad(ss)}d`;
+    document.getElementById('cd-today').textContent   = DAYS[now.getDay()];
+
+    // Notif time
+    document.getElementById('notif-time').textContent =
+      `Diperbarui: ${fmtDate(now)} — ${fmtTime(now)}`;
+
+    // Update notif body with specific day
+    document.getElementById('notif-body').innerHTML =
+      `Komunitas GFFI akan dibuka pada <strong style="color:#ff8800">${fmtDate(sat)}</strong>.<br>` +
+      `Setelah dibuka, akses berlaku <strong style="color:#ffcc00">selamanya</strong> tanpa batas.<br>` +
+      `Sisa waktu: <strong style="color:#ff4500">${dd}h ${hh}j ${mm}m ${ss}d</strong> ⚔️`;
+
+    setTimeout(tick, 1000);
+  }
+
+  tick();
+}
+
+// ══════════════════════════════
+//  UNLOCK TRANSITION
+// ══════════════════════════════
+function transitionToUnlock(){
+  // Flash effect
+  const flash = document.getElementById('unlock-flash');
+  flash.classList.add('go');
+
+  // Show popup
+  const popup = document.getElementById('unlock-popup');
+  const now   = new Date();
+  document.getElementById('upop-body').innerHTML =
+    `⚡ Akses dibuka: <strong style="color:#ff8800">${fmtDate(now)}</strong><br>` +
+    `Selamat datang, Pejuang GFFI! 🔥<br>` +
+    `<span style="color:rgba(255,200,0,.5);font-size:.5rem">Akses berlaku selamanya — tidak perlu tunggu lagi.</span>`;
+  setTimeout(()=>popup.classList.add('show'), 200);
+
+  // Hide countdown, start loader
+  setTimeout(()=>{
+    document.getElementById('countdown').style.opacity='0';
+    document.getElementById('countdown').style.transition='opacity .8s ease';
+    setTimeout(()=>{
+      document.getElementById('countdown').style.display='none';
+      popup.classList.remove('show');
+      startLoader();
+    }, 900);
+  }, 2000);
+}
+
+// ══════════════════════════════
+//  LOADER MODE
+// ══════════════════════════════
+const TEXTS = [
+  "Menginisialisasi sistem…",
+  "Terhubung ke server GFFI…",
+  "Memuat data pejuang…",
+  "Mengaktifkan battle royale…",
+  "Sinkronisasi rank & EXP…",
+  "Rendering peta Bermuda…",
+  "Memuat mode komunitas…",
+  "Verifikasi identitas pemain…",
+  "Dunia digital siap tempur…",
+  "⚡ SURVIVE OR DIE — GFFI ONLINE!"
+];
+const STEPS = [4,6,3,9,5,11,4,13,5,7,5,4,4,3,3,2,2,1,1,1];
+
+function startLoader(){
+  const loaderEl = document.getElementById('loader');
+  loaderEl.classList.add('active');
+
+  let prog=0, ti=0, si=0;
+  const bar  = document.getElementById('l-bar');
+  const pct  = document.getElementById('l-pct');
+  const ltxt = document.getElementById('l-txt');
+
+  function setTxt(t){ltxt.classList.remove('on');setTimeout(()=>{ltxt.textContent=t;ltxt.classList.add('on');},280);}
+
+  function updateStats(){
+    const p=prog;
+    document.getElementById('l-map').textContent  = Math.floor(p*.6);
+    document.getElementById('l-ply').textContent  = Math.floor(p*3.5);
+    document.getElementById('l-ping').textContent = 7+Math.floor(Math.random()*14);
+    document.getElementById('l-slot').textContent = Math.floor(p*.47);
+    document.getElementById('l-exp').textContent  = Math.floor(p*44);
+    document.getElementById('l-rank').textContent = p<25?'INIT':p<55?'SYNC':p<88?'READY':'ONLINE';
+    document.getElementById('l-sts').textContent  = p<100?'LOADING':'ONLINE';
+  }
+
+  function tick(){
+    if(prog>=100){done();return;}
+    prog=Math.min(100,prog+STEPS[si%STEPS.length]);si++;
+    bar.style.width=prog+'%';
+    pct.textContent=Math.round(prog)+'%';
+    const ni=Math.floor((prog/100)*(TEXTS.length-1));
+    if(ni!==ti){ti=ni;setTxt(TEXTS[ti]);}
+    updateStats();
+    setTimeout(tick,110+Math.random()*350);
+  }
+
+  function done(){
+    setTxt("⚡ Selamat datang, Pejuang GFFI!");
+    document.getElementById('l-sts').textContent='ONLINE';
+    setTimeout(()=>{
+      loaderEl.classList.add('exit');
+      document.getElementById('site').classList.add('on');
+    },900);
+  }
+
+  setTimeout(tick,500);
+}
+
+// ══════════════════════════════
+//  ENTRY POINT
+// ══════════════════════════════
+(function init(){
+  if(isUnlocked()){
+    // Already unlocked — skip countdown, go straight to loader
+    document.getElementById('countdown').style.display='none';
+    startLoader();
+  } else {
+    // Show countdown
+    startCountdown();
+  }
+})();
+</script>
+</body>
+</html>
