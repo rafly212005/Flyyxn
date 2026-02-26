@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>GFFI — Free Fire Indonesia</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Share+Tech+Mono&display=swap');
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#04020a;font-family:'Share Tech Mono',monospace;}
+
+/* ══ BG LAYERS ══ */
+.bg{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 120% 80% at 50% 110%,#1a0500 0%,transparent 55%),radial-gradient(ellipse 80% 60% at 20% 20%,#0a003a 0%,transparent 50%),radial-gradient(ellipse 60% 50% at 80% 80%,#1a0008 0%,transparent 50%),linear-gradient(160deg,#04020c 0%,#080318 40%,#04020a 100%);}
+.glow{position:fixed;border-radius:50%;z-index:0;pointer-events:none;filter:blur(60px);}
+.g1{width:50vw;height:50vw;top:60%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,70,0,.12) 0%,transparent 70%);animation:gP 4s ease-in-out infinite;}
+.g2{width:40vw;height:40vw;top:20%;left:15%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(100,0,200,.08) 0%,transparent 70%);animation:gP 6s ease-in-out infinite reverse;}
+.g3{width:35vw;height:35vw;top:30%;right:5%;transform:translateY(-50%);background:radial-gradient(circle,rgba(255,140,0,.07) 0%,transparent 70%);animation:gP 5s 1s ease-in-out infinite;}
+@keyframes gP{0%,100%{opacity:.6}50%{opacity:1}}
+.grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,90,0,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,90,0,.04) 1px,transparent 1px);background-size:48px 48px;animation:gS 10s linear infinite;will-change:transform;}
+@keyframes gS{to{transform:translateY(48px)}}
+.floor{position:fixed;bottom:-10%;left:-20%;right:-20%;height:55%;z-index:0;pointer-events:none;background-image:repeating-linear-gradient(90deg,rgba(255,80,0,.06) 0,rgba(255,80,0,.06) 1px,transparent 1px,transparent 7%),repeating-linear-gradient(rgba(255,80,0,.05) 0,rgba(255,80,0,.05) 1px,transparent 1px,transparent 10%);transform:perspective(280px) rotateX(65deg);transform-origin:50% 100%;mask-image:linear-gradient(to top,rgba(0,0,0,.5),transparent);-webkit-mask-image:linear-gradient(to top,rgba(0,0,0,.5),transparent);}
+.vig{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 90% 90% at 50% 50%,transparent 40%,rgba(2,1,8,.85) 100%);}
+.scan{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.scan::after{content:'';position:absolute;left:0;right:0;height:120px;background:linear-gradient(180deg,transparent,rgba(255,80,0,.04),transparent);animation:sM 5s linear infinite;will-change:transform;}
+@keyframes sM{from{transform:translateY(-120px)}to{transform:translateY(100vh)}}
+.hl{position:fixed;left:0;right:0;height:1px;z-index:2;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,100,0,.35),rgba(255,200,0,.6),rgba(255,100,0,.35),transparent);animation:hP 3s ease-in-out infinite;}
+.hl.t{top:0}.hl.b{bottom:0;animation-delay:1.5s}
+@keyframes hP{0%,100%{opacity:.3}50%{opacity:1}}
+
+/* ══ SHARED CORNER HUD ══ */
+.hb{position:fixed;width:20px;height:20px;z-index:30;animation:hbP 3.5s ease-in-out infinite;}
+.hb.tl{top:10px;left:10px;border-top:1.5px solid rgba(255,130,0,.45);border-left:1.5px solid rgba(255,130,0,.45);}
+.hb.tr{top:10px;right:10px;border-top:1.5px solid rgba(255,130,0,.45);border-right:1.5px solid rgba(255,130,0,.45);}
+.hb.bl{bottom:10px;left:10px;border-bottom:1.5px solid rgba(255,130,0,.45);border-left:1.5px solid rgba(255,130,0,.45);}
+.hb.br{bottom:10px;right:10px;border-bottom:1.5px solid rgba(255,130,0,.45);border-right:1.5px solid rgba(255,130,0,.45);}
+@keyframes hbP{0%,100%{opacity:.3}50%{opacity:.85}}
+.hlabel{position:fixed;font-size:.48rem;letter-spacing:.1em;color:rgba(255,140,0,.32);line-height:2.1;z-index:30;}
+.hl-tl{top:16px;left:16px}.hl-tr{top:16px;right:16px;text-align:right}
+.hl-bl{bottom:16px;left:16px}.hl-br{bottom:16px;right:16px;text-align:right}
+
+/* ══════════════════════════════════
+   NOTIFICATION — FUTURISTIC HUD CARD
+══════════════════════════════════ */
+#notif-toast{
+  position:fixed;
+  bottom:16px; left:50%; transform:translateX(-50%) translateY(calc(100% + 40px));
+  width:min(480px,92vw);
+  z-index:200;
+  transition:transform .6s cubic-bezier(.34,1.45,.64,1), opacity .4s ease;
+  opacity:0;
+}
+#notif-toast.show{
+  transform:translateX(-50%) translateY(0);
+  opacity:1;
+}
+#notif-toast.dismiss{
+  transform:translateX(-50%) translateY(calc(100% + 40px));
+  opacity:0;
+  transition:transform .4s ease-in, opacity .3s ease;
+}
+
+/* Outer glow ring */
+#notif-toast::before{
+  content:'';
+  position:absolute;inset:-1px;
+  border-radius:2px;
+  background:linear-gradient(135deg,rgba(255,120,0,.5),rgba(255,200,0,.3),rgba(255,60,0,.5));
+  z-index:-1;
+  animation:ringGlow 2.5s ease-in-out infinite;
+}
+@keyframes ringGlow{0%,100%{opacity:.4}50%{opacity:1}}
+
+.toast-shell{
+  background:linear-gradient(160deg,rgba(14,5,0,.98) 0%,rgba(22,8,0,.98) 60%,rgba(10,3,8,.98) 100%);
+  border:1px solid rgba(255,120,0,.25);
+  position:relative;overflow:hidden;
+  clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+
+/* Animated fire gradient top edge */
+.toast-shell::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    #ff3300 15%,#ff7700 30%,#ffcc00 50%,#ff7700 70%,#ff3300 85%,
+    transparent 100%);
+  background-size:200% 100%;
+  animation:fireLine 1.8s linear infinite;
+}
+@keyframes fireLine{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+/* Scan sweep */
+.toast-shell::after{
+  content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,140,0,.04),transparent);
+  animation:sweep 3s ease-in-out infinite 1s;
+  pointer-events:none;
+}
+@keyframes sweep{0%{left:-60%}100%{left:110%}}
+
+/* HEADER BAND */
+.toast-head{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 14px 8px;
+  border-bottom:1px solid rgba(255,80,0,.12);
+  background:rgba(255,50,0,.05);
+  position:relative;
+}
+/* Left neon bar */
+.toast-head::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,#ff3300,#ff8800,#ffcc00);
+  animation:leftBar 2s ease-in-out infinite;
+}
+@keyframes leftBar{0%,100%{opacity:.6}50%{opacity:1;box-shadow:0 0 8px #ff8800}}
+
+.toast-signal{
+  display:flex;align-items:center;gap:4px;flex-shrink:0;
+}
+.toast-signal span{
+  display:block;width:3px;border-radius:2px;
+  background:#ff8800;
+  animation:signalPulse 1.2s ease-in-out infinite;
+}
+.toast-signal span:nth-child(1){height:6px;animation-delay:0s}
+.toast-signal span:nth-child(2){height:10px;animation-delay:.15s}
+.toast-signal span:nth-child(3){height:14px;animation-delay:.3s}
+.toast-signal span:nth-child(4){height:10px;animation-delay:.45s}
+@keyframes signalPulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+.toast-title{
+  font-family:'Teko',sans-serif;font-weight:600;
+  font-size:clamp(.75rem,2.5vw,.9rem);
+  letter-spacing:.22em;
+  color:#ffcc00;
+  text-shadow:0 0 12px rgba(255,200,0,.6);
+  flex:1;
+}
+.toast-badge{
+  font-family:'Share Tech Mono',monospace;
+  font-size:.44rem;letter-spacing:.18em;
+  padding:2px 8px;
+  border:1px solid rgba(255,100,0,.45);
+  background:rgba(255,60,0,.15);
+  color:#ff8800;
+  clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
+  animation:bdgBlink 2s step-end infinite;
+}
+@keyframes bdgBlink{0%,100%{opacity:1;border-color:rgba(255,100,0,.45)}40%{opacity:.5;border-color:rgba(255,60,0,.2)}}
+
+/* BODY */
+.toast-body{
+  padding:10px 14px 0;
+  display:flex;gap:12px;align-items:flex-start;
+}
+.toast-icon-wrap{
+  flex-shrink:0;
+  width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(255,120,0,.25);
+  background:rgba(255,50,0,.08);
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  animation:iconPulse 3s ease-in-out infinite;
+}
+@keyframes iconPulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 14px 2px rgba(255,100,0,.25)}}
+.toast-icon{font-size:1.1rem;line-height:1;}
+.toast-content{flex:1;min-width:0;}
+.toast-msg{
+  font-size:clamp(.54rem,1.7vw,.64rem);
+  letter-spacing:.1em;
+  color:rgba(255,185,80,.72);
+  line-height:1.85;
+}
+.toast-msg strong{font-weight:normal;}
+
+/* FOOTER */
+.toast-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 14px 9px;
+  margin-top:8px;
+  border-top:1px solid rgba(255,80,0,.08);
+  gap:8px;
+}
+.toast-time{
+  font-size:.44rem;letter-spacing:.13em;
+  color:rgba(255,140,0,.28);
+  white-space:nowrap;
+}
+/* Thin fire progress */
+.toast-prog{
+  flex:1;height:2px;
+  background:rgba(255,60,0,.1);
+  border-radius:2px;overflow:hidden;
+  position:relative;
+}
+.toast-prog-fill{
+  height:100%;width:100%;
+  background:linear-gradient(90deg,#ff3300,#ff8800,#ffcc00,#ff8800,#ff3300);
+  background-size:300% 100%;
+  animation:pgShine 1.5s linear infinite;
+  box-shadow:0 0 6px #ff8800;
+  border-radius:2px;
+}
+.toast-prog-fill.shrink{
+  animation:pgShine 1.5s linear infinite, progShrink var(--dur,6s) linear forwards;
+}
+@keyframes pgShine{0%{background-position:0 0}100%{background-position:300% 0}}
+@keyframes progShrink{from{width:100%}to{width:0%}}
+.toast-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#ff4500;
+  box-shadow:0 0 6px #ff4500,0 0 12px #ff4500;
+  flex-shrink:0;
+  animation:dotPulse 1s ease-in-out infinite;
+}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+
+/* ══ COUNTDOWN SCREEN ══ */
+#countdown{
+  position:fixed;inset:0;z-index:20;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px;padding-bottom:100px; /* space for toast */
+  transition:opacity .8s ease,transform .8s ease;
+}
+#countdown.exit{opacity:0;transform:scale(.96);pointer-events:none;}
+
+.badge{font-size:.5rem;letter-spacing:.35em;color:#ff4500;text-shadow:0 0 10px #ff4500;text-transform:uppercase;margin-bottom:8px;animation:badgeBlink 1.5s step-end infinite;}
+@keyframes badgeBlink{0%,100%{opacity:1}50%{opacity:.35}}
+
+.lock-wrap{position:relative;width:clamp(80px,15vw,105px);height:clamp(80px,15vw,105px);display:flex;align-items:center;justify-content:center;margin-bottom:clamp(10px,2.5vw,18px);}
+.l-ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(255,80,0,.3);animation:rCW 12s linear infinite;will-change:transform;}
+.l-ring::before{content:'';position:absolute;width:5px;height:5px;border-radius:50%;top:-2.5px;left:50%;transform:translateX(-50%);background:#ff4500;box-shadow:0 0 8px #ff4500;}
+.l-ring2{position:absolute;inset:14%;border-radius:50%;border:1px dashed rgba(255,140,0,.2);animation:rCCW 7s linear infinite;will-change:transform;}
+@keyframes rCW{to{transform:rotate(360deg)}}
+@keyframes rCCW{to{transform:rotate(-360deg)}}
+.lock-hex{width:clamp(52px,10vw,70px);height:clamp(52px,10vw,70px);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);background:radial-gradient(circle at 40% 30%,#2a0800,#110300,#06020a);display:flex;align-items:center;justify-content:center;animation:hexP 2.5s ease-in-out infinite;}
+@keyframes hexP{0%,100%{filter:drop-shadow(0 0 6px rgba(255,60,0,.5))}50%{filter:drop-shadow(0 0 18px rgba(255,80,0,.9))}}
+.lock-icon{font-size:clamp(1.3rem,4vw,1.9rem);}
+
+.denied-title{font-family:'Teko',sans-serif;font-weight:700;font-size:clamp(1.8rem,7vw,3rem);letter-spacing:.2em;color:#ff4500;text-shadow:0 0 20px #ff4500,0 0 50px rgba(255,69,0,.4);text-align:center;line-height:1;animation:titleFlick 6s ease-in-out infinite;will-change:opacity;}
+@keyframes titleFlick{0%,85%,90%,100%{opacity:1}87%{opacity:.5}88%{opacity:.9}}
+.denied-sub{font-size:clamp(.52rem,2vw,.68rem);letter-spacing:.4em;color:rgba(255,140,0,.6);text-transform:uppercase;margin-top:3px;margin-bottom:clamp(12px,2.5vw,20px);text-align:center;}
+
+/* HUD info panel */
+.info-panel{border:1px solid rgba(255,100,0,.18);padding:clamp(8px,2vw,14px) clamp(12px,3vw,24px);background:rgba(255,40,0,.04);width:min(380px,85vw);margin-bottom:clamp(10px,2.5vw,18px);position:relative;}
+.info-panel::before,.info-panel::after{content:'';position:absolute;width:8px;height:8px;border-color:rgba(255,140,0,.4);border-style:solid;}
+.info-panel::before{top:-1px;left:-1px;border-width:1.5px 0 0 1.5px;}
+.info-panel::after{bottom:-1px;right:-1px;border-width:0 1.5px 1.5px 0;}
+.info-row{display:flex;justify-content:space-between;align-items:center;font-size:clamp(.48rem,1.5vw,.58rem);letter-spacing:.14em;color:rgba(255,140,0,.4);padding:3px 0;border-bottom:1px solid rgba(255,80,0,.06);}
+.info-row:last-child{border-bottom:none;}
+.info-val{color:#ff8800;text-shadow:0 0 5px rgba(255,140,0,.35);}
+.info-val.red{color:#ff4500;text-shadow:0 0 8px rgba(255,50,0,.5);}
+
+/* Countdown boxes */
+.cd-label{font-size:.48rem;letter-spacing:.25em;color:rgba(255,140,0,.38);text-transform:uppercase;text-align:center;margin-bottom:7px;}
+.cd-boxes{display:flex;gap:clamp(6px,1.8vw,14px);margin-bottom:0;}
+.cd-box{display:flex;flex-direction:column;align-items:center;background:rgba(255,40,0,.05);border:1px solid rgba(255,100,0,.18);padding:clamp(7px,1.8vw,12px) clamp(9px,2.2vw,16px);position:relative;min-width:clamp(50px,11vw,70px);}
+.cd-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,140,0,.3),transparent);}
+.cd-num{font-family:'Teko',sans-serif;font-weight:700;font-size:clamp(1.6rem,5.5vw,2.8rem);color:#ffcc00;text-shadow:0 0 12px #ffcc00,0 0 28px rgba(255,200,0,.3);line-height:1;}
+.cd-unit{font-size:.44rem;letter-spacing:.2em;color:rgba(255,140,0,.38);text-transform:uppercase;margin-top:2px;}
+
+/* Flash overlay */
+#flash{position:fixed;inset:0;z-index:150;background:radial-gradient(circle,rgba(255,150,0,.3),transparent 70%);opacity:0;pointer-events:none;}
+#flash.go{animation:flashAnim 1.5s ease-out forwards;}
+@keyframes flashAnim{0%{opacity:1}100%{opacity:0}}
+
+/* ══ LOADER SCREEN ══ */
+#loader{
+  position:fixed;inset:0;z-index:20;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding-bottom:110px; /* space for toast */
+  transition:opacity 1.4s ease,transform 1.4s ease;
+}
+#loader.active{display:flex;}
+#loader.exit{opacity:0;transform:scale(1.03);pointer-events:none;}
+
+.emblem{position:relative;width:clamp(120px,25vw,180px);height:clamp(120px,25vw,180px);display:flex;align-items:center;justify-content:center;margin-bottom:clamp(16px,3vw,28px);}
+.ring{position:absolute;border-radius:50%;will-change:transform;}
+.r1{inset:0;border:1px solid rgba(255,140,0,.18);animation:rCW 16s linear infinite;}
+.r1::before,.r1::after{content:'';position:absolute;border-radius:50%;width:5px;height:5px;top:-2.5px;left:50%;transform:translateX(-50%);background:#ff8800;box-shadow:0 0 8px #ff8800,0 0 16px #ff4500;}
+.r1::after{top:auto;bottom:-2.5px;background:#ffcc00;box-shadow:0 0 8px #ffcc00;}
+.r2{inset:13%;border:1px solid rgba(255,60,0,.2);animation:rCCW 10s linear infinite;}
+.r2::before{content:'';position:absolute;border-radius:50%;width:4px;height:4px;top:-2px;left:50%;transform:translateX(-50%);background:#ff4500;box-shadow:0 0 8px #ff4500;}
+.r3{inset:27%;border:1px dashed rgba(255,200,0,.18);animation:rCW 7s linear infinite;}
+.core{width:clamp(60px,12vw,90px);height:clamp(60px,12vw,90px);position:relative;z-index:5;display:flex;align-items:center;justify-content:center;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);background:radial-gradient(circle at 40% 30%,#2a0f00,#140700,#05030a);animation:hexP 3s ease-in-out infinite;will-change:opacity;}
+.flame{width:50%;height:58%;position:relative;z-index:6;filter:drop-shadow(0 0 4px #ff8800) drop-shadow(0 0 10px #ff4500);animation:flP 2.2s ease-in-out infinite;will-change:transform;}
+@keyframes flP{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.08) translateY(-2px)}}
+
+.ltitle{font-family:'Teko',sans-serif;font-weight:700;font-size:clamp(2.8rem,11vw,5.5rem);letter-spacing:.2em;color:#fff;line-height:1;text-shadow:0 0 18px #ff8800,0 0 45px rgba(255,120,0,.35);animation:titleFlick 9s ease-in-out infinite;will-change:opacity;}
+.lsub{font-size:clamp(.5rem,1.9vw,.7rem);letter-spacing:.45em;color:#ff8800;text-transform:uppercase;opacity:.7;margin-top:4px;text-align:center;}
+.div{width:min(360px,75vw);height:1px;background:linear-gradient(90deg,transparent,rgba(255,140,0,.15),#ff8800,rgba(255,140,0,.15),transparent);margin:clamp(7px,1.6vw,13px) 0;position:relative;}
+.div::before,.div::after{content:'';width:3px;height:3px;border-radius:50%;background:#ff8800;box-shadow:0 0 6px #ff8800;position:absolute;top:50%;transform:translateY(-50%);}
+.div::before{left:0}.div::after{right:0}
+
+.lt-box{height:24px;display:flex;align-items:center;justify-content:center;margin-bottom:clamp(12px,2vw,22px);}
+.lt{font-size:clamp(.6rem,1.8vw,.75rem);letter-spacing:.22em;color:#ff8800;text-shadow:0 0 7px #ff8800;opacity:0;transition:opacity .3s ease;display:flex;align-items:center;gap:8px;}
+.lt.on{opacity:1}
+.lt::before{content:'▶';font-size:.4rem;color:#ff4500;animation:cur .85s step-end infinite;}
+@keyframes cur{0%,100%{opacity:1}50%{opacity:0}}
+.pg{width:min(360px,75vw);}
+.pg-top{display:flex;justify-content:space-between;font-size:.5rem;letter-spacing:.12em;color:rgba(255,140,0,.38);margin-bottom:6px;}
+.pg-track{height:2px;background:rgba(255,60,0,.1);border-radius:2px;position:relative;}
+.pg-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,#ff3300,#ff8800,#ffcc00,#ff8800,#ff3300);background-size:400% 100%;box-shadow:0 0 10px #ff8800,0 0 22px rgba(255,140,0,.28);width:0%;transition:width .22s ease;will-change:width;animation:pgS 2s linear infinite;}
+.pg-bar::after{content:'';position:absolute;right:-1px;top:-5px;width:2px;height:12px;background:#fff;border-radius:1px;box-shadow:0 0 6px #fff,0 0 14px #ffcc00;}
+@keyframes pgS{0%{background-position:0 0}100%{background-position:400% 0}}
+.stats{display:flex;justify-content:center;gap:clamp(10px,3.5vw,30px);margin-top:clamp(10px,1.8vw,16px);}
+.stat{text-align:center;}
+.sv{font-family:'Teko',sans-serif;font-weight:700;font-size:clamp(.88rem,2.5vw,1.2rem);color:#ffcc00;text-shadow:0 0 8px #ffcc00;display:block;line-height:1.1;}
+.sl{font-size:.44rem;letter-spacing:.13em;color:rgba(255,140,0,.4);text-transform:uppercase;}
+
+/* ══ SITE ══ */
+#site{position:fixed;inset:0;z-index:5;opacity:0;pointer-events:none;transition:opacity 1.2s ease .3s;}
+#site.on{opacity:1;pointer-events:all;}
+#site iframe{width:100%;height:100%;border:none;display:block;}
+
+@media(max-width:360px){.hlabel{display:none;}.hb{width:14px;height:14px;}}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="bg"></div>
+<div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
+<div class="grid"></div>
+<div class="floor"></div>
+<div class="vig"></div>
+<div class="scan"></div>
+<div class="hl t"></div><div class="hl b"></div>
+
+<!-- Flash effect -->
+<div id="flash"></div>
+
+<!-- Shared corner brackets (always visible) -->
+<div class="hb tl"></div><div class="hb tr"></div>
+<div class="hb bl"></div><div class="hb br"></div>
+<div class="hlabel hl-tl">GFFI v3.1<br>SRV: ID-MAIN<br>STATUS: <span id="sys-status">STANDBY</span></div>
+<div class="hlabel hl-tr">REGION: INDONESIA<br>MODE: RANKED<br>PING: <span id="sys-ping">—</span>ms</div>
+<div class="hlabel hl-bl">© GFFI COMMUNITY<br>FREE FIRE INDONESIA</div>
+<div class="hlabel hl-br">HARI: <span id="sys-day">—</span><br>WAKTU: <span id="sys-time">—</span></div>
+
+<!-- ════ NOTIFICATION TOAST ════ -->
+<div id="notif-toast">
+  <div class="toast-shell">
+    <div class="toast-head">
+      <div class="toast-signal"><span></span><span></span><span></span><span></span></div>
+      <div class="toast-title" id="toast-title">NOTIFIKASI SISTEM — GFFI</div>
+      <div class="toast-badge" id="toast-badge">● LIVE</div>
+    </div>
+    <div class="toast-body">
+      <div class="toast-icon-wrap"><div class="toast-icon" id="toast-icon">📣</div></div>
+      <div class="toast-content"><div class="toast-msg" id="toast-msg">Memuat informasi sistem…</div></div>
+    </div>
+    <div class="toast-foot">
+      <div class="toast-dot"></div>
+      <div class="toast-prog"><div class="toast-prog-fill" id="toast-prog-fill"></div></div>
+      <div class="toast-time" id="toast-time">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ COUNTDOWN SCREEN ════ -->
+<div id="countdown">
+  <div class="badge">⚠ sistem terkunci ⚠</div>
+
+  <div class="lock-wrap">
+    <div class="l-ring"></div>
+    <div class="l-ring2"></div>
+    <div class="lock-hex"><div class="lock-icon">🔒</div></div>
+  </div>
+
+  <div class="denied-title">ACCESS DENIED</div>
+  <div class="denied-sub">GFFI Community Portal</div>
+
+  <div class="info-panel">
+    <div class="info-row"><span>STATUS AKSES</span><span class="info-val red" id="i-status">TERKUNCI</span></div>
+    <div class="info-row"><span>HARI INI</span><span class="info-val" id="i-today">—</span></div>
+    <div class="info-row"><span>JAM SEKARANG</span><span class="info-val" id="i-now">—</span></div>
+    <div class="info-row"><span>DIBUKA PADA</span><span class="info-val" id="i-open">—</span></div>
+    <div class="info-row"><span>SISA WAKTU</span><span class="info-val red" id="i-remain">—</span></div>
+  </div>
+
+  <div class="cd-label">▼ COUNTDOWN MENUJU PEMBUKAAN ▼</div>
+  <div class="cd-boxes">
+    <div class="cd-box"><span class="cd-num" id="cd-d">00</span><span class="cd-unit">Hari</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-h">00</span><span class="cd-unit">Jam</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-m">00</span><span class="cd-unit">Menit</span></div>
+    <div class="cd-box"><span class="cd-num" id="cd-s">00</span><span class="cd-unit">Detik</span></div>
+  </div>
+</div>
+
+<!-- ════ LOADER SCREEN ════ -->
+<div id="loader">
+  <div class="emblem">
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="ring r3"></div>
+    <div class="core">
+      <svg class="flame" viewBox="0 0 60 76" fill="none">
+        <path d="M30 3C30 3 48 21 48 37c0 10-5 16-11 20 3-7 0-14-4-17 0 7-4 12-7 17C20 53 14 47 14 37 14 21 30 3 30 3z" fill="url(#f1)"/>
+        <path d="M30 25s8 10 8 20c0 6-3 9-5 11 1-4 0-9-3-12 0 5-2 8-5 12-3-3-4-6-4-11 0-10 9-20 9-20z" fill="url(#f2)"/>
+        <path d="M25 60Q30 73 35 60Q32 65 30 67Q28 65 25 60Z" fill="url(#f1)" opacity=".65"/>
+        <defs>
+          <linearGradient id="f1" x1="30" y1="3" x2="30" y2="73" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffd700"/><stop offset="55%" stop-color="#ff8800"/><stop offset="100%" stop-color="#ff3300"/>
+          </linearGradient>
+          <linearGradient id="f2" x1="30" y1="25" x2="30" y2="63" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fffacc"/><stop offset="55%" stop-color="#ffd700"/><stop offset="100%" stop-color="#ff8800"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+  </div>
+
+  <div class="ltitle">GFFI</div>
+  <div class="lsub">Garena Free Fire Indonesia</div>
+  <div class="div"></div>
+
+  <div class="lt-box"><div class="lt on" id="l-txt">Menginisialisasi sistem…</div></div>
+
+  <div class="pg">
+    <div class="pg-top"><span>BATTLE SYSTEM INIT</span><span id="l-pct">0%</span></div>
+    <div class="pg-track"><div class="pg-bar" id="l-bar"></div></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="sv" id="l-map">—</span><span class="sl">MAP LOADED</span></div>
+    <div class="stat"><span class="sv" id="l-ply">—</span><span class="sl">PEMAIN AKTIF</span></div>
+    <div class="stat"><span class="sv" id="l-sts">—</span><span class="sl">STATUS</span></div>
+  </div>
+</div>
+
+<!-- SITE -->
+<div id="site">
+  <iframe src="https://garena-freefire-indonesia.netlify.app/" title="GFFI" loading="lazy"></iframe>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   UTILS
+══════════════════════════════════ */
+const DAYS   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const MONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const KEY    = 'gffi_unlocked_v2';
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtTime(d){ return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+function fmtDate(d){ return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; }
+function $(id){ return document.getElementById(id); }
+
+/* Get next Saturday 00:00:00 */
+function getNextSaturday(){
+  const now  = new Date();
+  const day  = now.getDay(); // 0=Sun..6=Sat
+  const diff = (6 - day + 7) % 7;
+  const sat  = new Date(now);
+  sat.setDate(now.getDate() + diff);
+  sat.setHours(0,0,0,0);
+  return sat;
+}
+
+/* ── Tick corner clock every second ── */
+function startCornerClock(){
+  function tick(){
+    const now = new Date();
+    $('sys-day').textContent  = DAYS[now.getDay()];
+    $('sys-time').textContent = fmtTime(now);
+    $('sys-ping').textContent = 7 + Math.floor(Math.random()*14);
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+/* ══════════════════════════════════
+   NOTIFICATION TOAST
+   — slides up from bottom
+   — STAYS until explicitly dismissed
+   — progress bar shows duration
+══════════════════════════════════ */
+function showToast(opts){
+  /*
+    opts = {
+      icon, title, badge, msg,  ← required
+      color,                    ← optional accent (default #ffcc00)
+      duration,                 ← ms before auto-dismiss (0 = stay forever)
+    }
+  */
+  const toast = $('notif-toast');
+  const fill  = $('toast-prog-fill');
+
+  $('toast-icon').textContent  = opts.icon  || '📣';
+  $('toast-title').textContent = opts.title || 'NOTIFIKASI GFFI';
+  $('toast-badge').textContent = opts.badge || '● LIVE';
+  $('toast-msg').innerHTML     = opts.msg   || '';
+  $('toast-time').textContent  = `${fmtDate(new Date())} — ${fmtTime(new Date())}`;
+
+  // Reset state
+  toast.classList.remove('dismiss');
+  fill.classList.remove('shrink');
+  fill.style.animationDuration = '';
+
+  // Slide in
+  requestAnimationFrame(()=>{
+    toast.classList.add('show');
+  });
+
+  // Start shrink bar if duration set
+  if(opts.duration && opts.duration > 0){
+    fill.style.setProperty('--dur', (opts.duration/1000) + 's');
+    setTimeout(()=> fill.classList.add('shrink'), 200);
+    setTimeout(()=> dismissToast(), opts.duration + 200);
+  } else {
+    // No auto-dismiss — bar stays full
+    fill.style.width = '100%';
+  }
+}
+
+function dismissToast(){
+  const toast = $('notif-toast');
+  toast.classList.add('dismiss');
+  setTimeout(()=> toast.classList.remove('show'), 400);
+}
+
+/* ══════════════════════════════════
+   UNLOCK CHECK
+══════════════════════════════════ */
+function isUnlocked(){
+  try{ if(localStorage.getItem(KEY)==='true') return true; }catch(e){}
+  return new Date().getDay() === 6; // Saturday
+}
+function saveUnlock(){
+  try{ localStorage.setItem(KEY,'true'); }catch(e){}
+}
+
+/* ══════════════════════════════════
+   COUNTDOWN MODE
+══════════════════════════════════ */
+function startCountdown(){
+  const sat = getNextSaturday();
+
+  // Show locked toast — stays until opened
+  showToast({
+    icon: '🔒',
+    title: 'AKSES TERKUNCI — GFFI PORTAL',
+    badge: '● WAITING',
+    msg: `Portal GFFI akan dibuka pada<br>
+          <strong style="color:#ff8800">${fmtDate(sat)}</strong> pukul <strong style="color:#ffcc00">00:00 WIB</strong>.<br>
+          Setelah dibuka, akses berlaku <strong style="color:#ffcc00">selamanya</strong> tanpa batas.<br>
+          Persiapkan dirimu, Pejuang! ⚔️`,
+    duration: 0  // stay forever until unlock
+  });
+
+  $('sys-status').textContent = 'LOCKED';
+
+  function tick(){
+    const now  = new Date();
+
+    if(now.getDay() === 6 || now >= sat){
+      saveUnlock();
+      triggerUnlock(sat);
+      return;
+    }
+
+    const diff = sat - now;
+    const dd   = Math.floor(diff / 86400000);
+    const hh   = Math.floor((diff % 86400000) / 3600000);
+    const mm   = Math.floor((diff % 3600000)  / 60000);
+    const ss   = Math.floor((diff % 60000)    / 1000);
+
+    // Countdown boxes
+    $('cd-d').textContent = pad(dd);
+    $('cd-h').textContent = pad(hh);
+    $('cd-m').textContent = pad(mm);
+    $('cd-s').textContent = pad(ss);
+
+    // Info panel
+    $('i-today').textContent  = fmtDate(now);
+    $('i-now').textContent    = fmtTime(now);
+    $('i-open').textContent   = `${fmtDate(sat)} 00:00`;
+    $('i-remain').textContent = `${pad(dd)}h ${pad(hh)}j ${pad(mm)}m ${pad(ss)}d`;
+
+    // Update toast message with live countdown
+    $('toast-msg').innerHTML =
+      `Portal GFFI dibuka: <strong style="color:#ff8800">${fmtDate(sat)}</strong> 00:00 WIB<br>
+       Sisa waktu: <strong style="color:#ff4500">${dd > 0 ? dd+'h ' : ''}${pad(hh)}j ${pad(mm)}m ${pad(ss)}d</strong><br>
+       Akses berlaku <strong style="color:#ffcc00">selamanya</strong> setelah dibuka ⚔️`;
+    $('toast-time').textContent = `Diperbarui: ${fmtDate(now)} — ${fmtTime(now)}`;
+
+    setTimeout(tick, 1000);
+  }
+
+  tick();
+}
+
+/* ══════════════════════════════════
+   UNLOCK TRANSITION
+══════════════════════════════════ */
+function triggerUnlock(sat){
+  const now = new Date();
+
+  // Flash screen
+  $('flash').classList.add('go');
+
+  // Update toast to UNLOCKED — stays visible during loader
+  $('sys-status').textContent = 'UNLOCKED';
+  showToast({
+    icon: '🔥',
+    title: '⚡ GFFI TELAH DIBUKA! SELAMAT DATANG!',
+    badge: '● ONLINE',
+    msg: `Akses dibuka: <strong style="color:#ff8800">${fmtDate(now)}</strong><br>
+          Selamat datang, <strong style="color:#ffcc00">Pejuang GFFI</strong>! 🔥<br>
+          Akses berlaku <strong style="color:#ffcc00">selamanya</strong> — tidak perlu menunggu lagi.`,
+    duration: 0  // stays during whole loader
+  });
+
+  // Fade out countdown
+  setTimeout(()=>{
+    $('countdown').classList.add('exit');
+    setTimeout(()=>{
+      $('countdown').style.display = 'none';
+      startLoader();
+    }, 900);
+  }, 1800);
+}
+
+/* ══════════════════════════════════
+   ALREADY UNLOCKED — direct loader
+══════════════════════════════════ */
+function showUnlockedAndLoad(){
+  const now = new Date();
+  $('countdown').style.display = 'none';
+  $('sys-status').textContent  = 'ONLINE';
+
+  // Show welcome toast — stays during loading
+  showToast({
+    icon: '🔥',
+    title: '⚡ GFFI — SELAMAT DATANG KEMBALI!',
+    badge: '● ONLINE',
+    msg: `Halo, <strong style="color:#ffcc00">Pejuang GFFI</strong>! Aksesmu masih aktif. 🔥<br>
+          Sistem sedang menyiapkan arena pertempuran…<br>
+          <span style="color:rgba(255,180,0,.5);font-size:.5rem">Dibuka sejak: Sabtu | Berlaku selamanya</span>`,
+    duration: 0 // dismiss when loader finishes
+  });
+
+  startLoader();
+}
+
+/* ══════════════════════════════════
+   LOADER
+══════════════════════════════════ */
+const TEXTS = [
+  "Menginisialisasi sistem…",
+  "Terhubung ke server GFFI…",
+  "Memuat data pejuang…",
+  "Mengaktifkan battle royale…",
+  "Sinkronisasi rank & EXP…",
+  "Rendering peta Bermuda…",
+  "Memuat mode komunitas…",
+  "Verifikasi identitas pemain…",
+  "Dunia digital siap tempur…",
+  "⚡ SURVIVE OR DIE — GFFI ONLINE!"
+];
+const STEPS = [4,6,3,9,5,11,4,13,5,7,5,4,4,3,3,2,2,1,1,1];
+
+function startLoader(){
+  const loaderEl = $('loader');
+  loaderEl.classList.add('active');
+
+  let prog=0, ti=0, si=0;
+  const bar  = $('l-bar');
+  const pct  = $('l-pct');
+  const ltxt = $('l-txt');
+
+  function setTxt(t){
+    ltxt.classList.remove('on');
+    setTimeout(()=>{ ltxt.textContent=t; ltxt.classList.add('on'); }, 280);
+  }
+
+  function updateStats(){
+    const p = prog;
+    $('l-map').textContent = Math.floor(p * .6);
+    $('l-ply').textContent = Math.floor(p * 3.5);
+    $('l-sts').textContent = p < 100 ? 'LOADING' : 'ONLINE';
+  }
+
+  function tick(){
+    if(prog >= 100){ done(); return; }
+    prog = Math.min(100, prog + STEPS[si % STEPS.length]);
+    si++;
+    bar.style.width  = prog + '%';
+    pct.textContent  = Math.round(prog) + '%';
+    const ni = Math.floor((prog / 100) * (TEXTS.length - 1));
+    if(ni !== ti){ ti = ni; setTxt(TEXTS[ti]); }
+    updateStats();
+    setTimeout(tick, 110 + Math.random() * 350);
+  }
+
+  function done(){
+    $('sys-status').textContent = 'ONLINE';
+    setTxt("⚡ Selamat datang, Pejuang GFFI!");
+    $('l-sts').textContent = 'ONLINE';
+
+    // Update toast to "entering" state, then dismiss as site loads
+    showToast({
+      icon: '🏆',
+      title: '⚡ MEMASUKI ARENA — GFFI ONLINE!',
+      badge: '● READY',
+      msg: `<strong style="color:#ffcc00">GFFI Community</strong> siap digunakan!<br>
+            Bersiaplah untuk pertempuran sengit, Pejuang! 🔥`,
+      duration: 3000
+    });
+
+    setTimeout(()=>{
+      loaderEl.classList.add('exit');
+      $('site').classList.add('on');
+    }, 900);
+  }
+
+  setTimeout(tick, 500);
+}
+
+/* ══════════════════════════════════
+   ENTRY
+══════════════════════════════════ */
+startCornerClock();
+
+if(isUnlocked()){
+  showUnlockedAndLoad();
+} else {
+  startCountdown();
+}
+</script>
+</body>
+</html>
